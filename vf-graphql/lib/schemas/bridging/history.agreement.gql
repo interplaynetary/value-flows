@@ -1,4 +1,0 @@
-type Agreement {
-  revision(revisionId: ID!): Agreement
-  meta: RecordMeta!
-}

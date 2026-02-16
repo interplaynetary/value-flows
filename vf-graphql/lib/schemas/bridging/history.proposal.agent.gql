@@ -1,4 +1,0 @@
-type ProposedTo {
-  revision(revisionId: ID!): ProposedTo
-  meta: RecordMeta!
-}

@@ -1,0 +1,134 @@
+{
+  "lexicon": 1,
+  "id": "vf.planning.intent",
+  "description": "A desired or proposed or planned or estimated economic flow, usually with only one agent associated, which could become a commitment and/or economic event.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Defines the kind of flow.",
+            "knownValues": [
+              "accept", "cite", "combine", "consume", "copy",
+              "deliver-service", "dropoff", "lower", "modify", "move",
+              "pickup", "produce", "raise", "separate", "transfer",
+              "transfer-all-rights", "transfer-custody", "use", "work"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent who intends to initiate the flow."
+          },
+          "receiver": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent for whom the flow is intended."
+          },
+          "resourceInventoriedAs": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to the vf.observation.economicResource involved."
+          },
+          "resourceConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.resourceSpecification."
+          },
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for the resource."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the economic resource."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of effort."
+          },
+          "availableQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount currently available for the offered resource."
+          },
+          "minimumQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The minimum required order amount."
+          },
+          "hasPointInTime": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The planned date/time of the flow."
+          },
+          "hasBeginning": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The planned beginning date/time."
+          },
+          "hasEnd": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The planned ending date/time."
+          },
+          "due": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date/time the intent is expected to be fulfilled."
+          },
+          "inputOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.planning.process this intent is an input of."
+          },
+          "outputOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.planning.process this intent is an output of."
+          },
+          "plannedWithin": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.planning.plan this intent is part of."
+          },
+          "stage": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.processSpecification for the required resource stage."
+          },
+          "state": {
+            "type": "string",
+            "description": "The required state of the desired resource."
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "The intent is complete or not. Default false."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the intent."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI to an image relevant to the intent."
+          },
+          "imageList": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "URIs to images relevant to the intent."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,9 +1,0 @@
-type Claim {
-  revision(revisionId: ID!): Claim
-  meta: RecordMeta!
-}
-
-type Settlement {
-  revision(revisionId: ID!): Settlement
-  meta: RecordMeta!
-}

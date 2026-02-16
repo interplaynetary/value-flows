@@ -1,0 +1,80 @@
+{
+  "lexicon": 1,
+  "id": "vf.planning.claim",
+  "description": "A claim for a future economic event(s) in reciprocity for an economic event that already occurred.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Defines the kind of flow.",
+            "knownValues": [
+              "accept", "cite", "combine", "consume", "copy",
+              "deliver-service", "dropoff", "lower", "modify", "move",
+              "pickup", "produce", "raise", "separate", "transfer",
+              "transfer-all-rights", "transfer-custody", "use", "work"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent who provides."
+          },
+          "receiver": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent who receives."
+          },
+          "resourceConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.resourceSpecification."
+          },
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for the resource."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the economic resource."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of effort."
+          },
+          "triggeredBy": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.observation.economicEvent that implied the claim."
+          },
+          "due": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date/time the claim is expected to be settled."
+          },
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date/time the claim was recorded."
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "The claim is settled or not. Default false."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the claim."
+          }
+        }
+      }
+    }
+  }
+}

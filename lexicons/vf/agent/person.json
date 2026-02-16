@@ -1,10 +1,10 @@
 {
   "lexicon": 1,
   "id": "vf.agent.person",
+  "description": "A human being. All persons are considered agents.",
   "defs": {
     "main": {
       "type": "record",
-      "description": "A natural person with economic agency",
       "key": "tid",
       "record": {
         "type": "object",
@@ -12,19 +12,21 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "The name that this agent will be referred to by",
-            "maxLength": 500
+            "description": "An informal or formal textual identifier for the agent."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "The URI to an image relevant to the agent, such as a photo or avatar"
+            "description": "URI to an image relevant to the agent, such as a photo or avatar."
           },
           "note": {
             "type": "string",
-            "description": "A textual description or comment",
-            "maxGraphemes": 3000,
-            "maxLength": 10000
+            "description": "Any useful textual information about the agent."
+          },
+          "primaryLocation": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.geo.spatialThing record for the agent's main location."
           }
         }
       }

@@ -1,0 +1,107 @@
+{
+  "lexicon": 1,
+  "id": "vf.knowledge.action",
+  "description": "An action verb defining the kind of flow and its behavior. Includes metadata about effects on inventoried resources.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["label"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "The display label for the action.",
+            "knownValues": [
+              "accept",
+              "cite",
+              "combine",
+              "consume",
+              "copy",
+              "deliver-service",
+              "dropoff",
+              "lower",
+              "modify",
+              "move",
+              "pickup",
+              "produce",
+              "raise",
+              "separate",
+              "transfer",
+              "transfer-all-rights",
+              "transfer-custody",
+              "use",
+              "work"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "description": "Description of this action's behavior."
+          },
+          "inputOutput": {
+            "type": "string",
+            "description": "Whether the action is an input or output of a process, or not applicable.",
+            "knownValues": ["input", "output", "outputInput", "notApplicable"]
+          },
+          "pairsWith": {
+            "type": "string",
+            "description": "The action that usually affects the same resource as a complement in the same flow.",
+            "knownValues": [
+              "accept",
+              "modify",
+              "pickup",
+              "dropoff",
+              "notApplicable"
+            ]
+          },
+          "createResource": {
+            "type": "string",
+            "description": "Whether the action can create an economic resource.",
+            "knownValues": ["optional", "optionalTo", "notApplicable"]
+          },
+          "eventQuantity": {
+            "type": "string",
+            "description": "Whether the event uses resource quantity, effort quantity, or both.",
+            "knownValues": ["resource", "effort", "both"]
+          },
+          "accountingEffect": {
+            "type": "string",
+            "description": "The effect on the accounting quantity of an inventoried resource.",
+            "knownValues": ["increment", "incrementTo", "decrement", "decrementIncrement", "notApplicable"]
+          },
+          "onhandEffect": {
+            "type": "string",
+            "description": "The effect on the onhand quantity of an inventoried resource.",
+            "knownValues": ["increment", "incrementTo", "decrement", "decrementIncrement", "notApplicable"]
+          },
+          "locationEffect": {
+            "type": "string",
+            "description": "The effect on an inventoried resource's current location.",
+            "knownValues": ["new", "update", "updateTo", "notApplicable"]
+          },
+          "containedEffect": {
+            "type": "string",
+            "description": "The effect on an inventoried resource's containment.",
+            "knownValues": ["update", "remove", "notApplicable"]
+          },
+          "accountableEffect": {
+            "type": "string",
+            "description": "The effect on the primary accountable agent of an inventoried resource.",
+            "knownValues": ["new", "updateTo", "notApplicable"]
+          },
+          "stageEffect": {
+            "type": "string",
+            "description": "The effect on an inventoried resource's stage.",
+            "knownValues": ["update", "notApplicable"]
+          },
+          "stateEffect": {
+            "type": "string",
+            "description": "The effect on an inventoried resource's state.",
+            "knownValues": ["update", "updateTo", "notApplicable"]
+          }
+        }
+      }
+    }
+  }
+}

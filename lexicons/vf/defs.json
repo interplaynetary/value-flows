@@ -1,0 +1,27 @@
+{
+  "lexicon": 1,
+  "id": "vf.defs",
+  "description": "Shared definitions for ValueFlows on AT Protocol.",
+  "defs": {
+    "measure": {
+      "type": "object",
+      "description": "A quantity expressed as a numeric value with a unit of measure. Uses numerator/denominator integers since AT Protocol forbids floats. E.g. 10.5 kg = { hasNumericalValue: 105, hasDenominator: 10 }.",
+      "required": ["hasNumericalValue"],
+      "properties": {
+        "hasNumericalValue": {
+          "type": "integer",
+          "description": "Numerator of the numeric amount."
+        },
+        "hasDenominator": {
+          "type": "integer",
+          "description": "Denominator for decimal precision. Defaults to 1 if omitted (whole number)."
+        },
+        "hasUnit": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "Reference to a vf.knowledge.unit record."
+        }
+      }
+    }
+  }
+}

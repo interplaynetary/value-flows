@@ -1,4 +1,0 @@
-type Satisfaction {
-  revision(revisionId: ID!): Satisfaction
-  meta: RecordMeta!
-}

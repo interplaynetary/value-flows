@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "vf.recipe.recipeExchange",
+  "description": "Specifies an exchange type agreement as part of a recipe.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "recipeStipulates": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.recipe.recipeFlow records that are the primary clauses of this recipe exchange."
+          },
+          "recipeStipulatesReciprocal": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.recipe.recipeFlow records that are the reciprocal clauses of this recipe exchange."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the recipe exchange."
+          }
+        }
+      }
+    }
+  }
+}

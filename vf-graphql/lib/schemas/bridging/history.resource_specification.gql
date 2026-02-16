@@ -1,4 +1,0 @@
-type ResourceSpecification {
-  revision(revisionId: ID!): ResourceSpecification
-  meta: RecordMeta!
-}

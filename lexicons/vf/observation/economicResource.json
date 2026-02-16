@@ -1,102 +1,104 @@
 {
   "lexicon": 1,
   "id": "vf.observation.economicResource",
+  "description": "Economic or environmental things (material or digital), media of exchange, which agents agree should be accounted for and which can be inventoried.",
   "defs": {
     "main": {
       "type": "record",
-      "description": "A resource which is useful to people or the ecosystem",
       "key": "tid",
       "record": {
         "type": "object",
+        "required": ["conformsTo"],
         "properties": {
           "name": {
             "type": "string",
-            "description": "An informal or formal textual identifier for an item",
-            "maxLength": 500
-          },
-          "classifiedAs": {
-            "type": "array",
-            "description": "References one or more concepts in a common taxonomy for categorization",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "maxLength": 100
-          },
-          "trackingIdentifier": {
-            "type": "string",
-            "description": "Sometimes called serial number, used when each item must have a traceable identifier",
-            "maxLength": 500
-          },
-          "image": {
-            "type": "string",
-            "format": "uri",
-            "description": "The URI to an image relevant to the resource"
-          },
-          "imageList": {
-            "type": "array",
-            "description": "URI addresses to images relevant to the resource",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "maxLength": 20
-          },
-          "accountingQuantity": {
-            "type": "ref",
-            "ref": "vf.observation.defs#measure",
-            "description": "The current amount and unit for which the agent has primary rights and responsibilities"
-          },
-          "onhandQuantity": {
-            "type": "ref",
-            "ref": "vf.observation.defs#measure",
-            "description": "The current amount and unit which is under direct control of the agent"
-          },
-          "unitOfEffort": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to the Unit used for use or work or cite actions for this resource"
-          },
-          "containedIn": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Used when a stock economic resource contains items also defined as economic resources"
+            "description": "An informal or formal textual identifier for the resource."
           },
           "conformsTo": {
             "type": "string",
             "format": "at-uri",
-            "description": "The primary resource specification or definition of an existing or potential economic resource"
+            "description": "Reference to a vf.knowledge.resourceSpecification this resource conforms to."
           },
           "primaryAccountable": {
             "type": "string",
             "format": "did",
-            "description": "The agent currently with primary rights and responsibilities for the economic resource"
+            "description": "The agent with primary rights and responsibilities for the resource."
+          },
+          "accountingQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The current amount the agent has primary rights to."
+          },
+          "onhandQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The current amount under direct control of the agent."
+          },
+          "trackingIdentifier": {
+            "type": "string",
+            "description": "Any identifier used to track a singular resource, such as a serial number."
           },
           "currentLocation": {
             "type": "string",
             "format": "at-uri",
-            "description": "The current place an economic resource is located. Could be at any level of granularity."
+            "description": "Reference to a vf.geo.spatialThing for the current physical location."
+          },
+          "currentVirtualLocation": {
+            "type": "string",
+            "format": "uri",
+            "description": "The current virtual place a digital resource is located."
+          },
+          "currentCurrencyLocation": {
+            "type": "string",
+            "description": "The current virtual place a currency resource is located (e.g. bank account, crypto wallet)."
           },
           "stage": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to ProcessSpecification - the state of the desired economic resource"
+            "description": "Reference to a vf.knowledge.processSpecification representing the last process stage."
           },
           "state": {
-            "type": "ref",
-            "ref": "vf.observation.defs#action",
-            "description": "The state of the desired economic resource (pass or fail), after coming out of a test or review process"
+            "type": "string",
+            "description": "The state of the resource after coming out of a test or review process."
           },
-          "lot": {
+          "containedIn": {
             "type": "string",
             "format": "at-uri",
-            "description": "Lot or batch of an economic resource, used to track forward or backwards to all occurrences"
+            "description": "Reference to another vf.observation.economicResource that contains this one."
+          },
+          "contains": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.observation.economicResource records contained in this resource."
+          },
+          "unitOfEffort": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.unit used for effort-based actions."
+          },
+          "ofBatchLot": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.resource.batchLotRecord."
+          },
+          "classifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for categorization."
           },
           "note": {
             "type": "string",
-            "description": "A textual description or comment",
-            "maxGraphemes": 3000,
-            "maxLength": 10000
+            "description": "Any useful textual information about the resource."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI to an image relevant to the resource."
+          },
+          "imageList": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "URIs to images relevant to the resource."
           }
         }
       }

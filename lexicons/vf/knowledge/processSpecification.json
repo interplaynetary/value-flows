@@ -1,10 +1,10 @@
 {
   "lexicon": 1,
   "id": "vf.knowledge.processSpecification",
+  "description": "Specifies the kind of process.",
   "defs": {
     "main": {
       "type": "record",
-      "description": "Specifies the kind of process",
       "key": "tid",
       "record": {
         "type": "object",
@@ -12,19 +12,16 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "An informal or formal textual identifier for the process",
-            "maxLength": 500
+            "description": "An informal or formal textual identifier for the process specification."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the process specification."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "The image of the process"
-          },
-          "note": {
-            "type": "string",
-            "description": "A textual description or comment",
-            "maxGraphemes": 3000,
-            "maxLength": 10000
+            "description": "URI to an image relevant to the process specification."
           }
         }
       }

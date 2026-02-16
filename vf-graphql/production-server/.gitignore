@@ -1,7 +1,0 @@
-node_modules/
-.env
-.env.local
-drizzle/
-dist/
-*.log
-.DS_Store

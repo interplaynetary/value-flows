@@ -1,4 +1,0 @@
-type Fulfillment {
-  revision(revisionId: ID!): Fulfillment
-  meta: RecordMeta!
-}

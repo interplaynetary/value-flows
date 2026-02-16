@@ -1,9 +1,0 @@
-type Scenario {
-  revision(revisionId: ID!): Scenario
-  meta: RecordMeta!
-}
-
-type ScenarioDefinition {
-  revision(revisionId: ID!): ScenarioDefinition
-  meta: RecordMeta!
-}

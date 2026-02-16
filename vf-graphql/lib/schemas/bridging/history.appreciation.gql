@@ -1,4 +1,0 @@
-type Appreciation {
-  revision(revisionId: ID!): Appreciation
-  meta: RecordMeta!
-}

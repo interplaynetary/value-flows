@@ -1,7 +1,7 @@
 {
   "lexicon": 1,
-  "id": "vf.agent.organization",
-  "description": "A functional structure, formal or informal, which can include people and/or other organizations, and has its own agency.",
+  "id": "vf.agent.ecologicalAgent",
+  "description": "A non-human being; or a functional group of non-human beings; or an ecosystem of living beings that includes non-humans; but it has agency and receives and/or provides economic/ecological resources.",
   "defs": {
     "main": {
       "type": "record",
@@ -12,16 +12,16 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "An informal or formal textual identifier for the organization."
+            "description": "An informal or formal textual identifier for the ecological agent."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "URI to an image relevant to the organization, such as a logo."
+            "description": "URI to an image relevant to the ecological agent."
           },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the organization."
+            "description": "Any useful textual information about the ecological agent."
           },
           "classifiedAs": {
             "type": "array",
@@ -31,7 +31,7 @@
           "primaryLocation": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.geo.spatialThing record for the organization's main location."
+            "description": "Reference to a vf.geo.spatialThing record for the agent's main location."
           }
         }
       }

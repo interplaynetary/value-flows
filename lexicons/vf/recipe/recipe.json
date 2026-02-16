@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "vf.recipe.recipe",
+  "description": "Optional instance of a recipe which directly specifies the recipe processes included.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for the recipe."
+          },
+          "recipeIncludes": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.recipe.recipeProcess records needed for this recipe."
+          },
+          "primaryOutput": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.resourceSpecification for the main output this recipe is intended to produce."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the recipe."
+          }
+        }
+      }
+    }
+  }
+}

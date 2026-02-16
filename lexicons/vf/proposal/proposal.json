@@ -1,0 +1,74 @@
+{
+  "lexicon": 1,
+  "id": "vf.proposal.proposal",
+  "description": "Published requests or offers, sometimes with what is expected in return.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for the proposal."
+          },
+          "purpose": {
+            "type": "string",
+            "description": "The type of proposal, whether offer or request.",
+            "knownValues": ["offer", "request"]
+          },
+          "publishes": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.intent records that are the primary intents of this proposal."
+          },
+          "reciprocal": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.intent records that are the reciprocal intents of this proposal."
+          },
+          "proposedTo": {
+            "type": "array",
+            "items": { "type": "string", "format": "did" },
+            "description": "DIDs of agents to which the proposal is published."
+          },
+          "eligibleLocation": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.geo.spatialThing where the proposal is valid."
+          },
+          "listedIn": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.proposal.proposalList this proposal is part of."
+          },
+          "unitBased": {
+            "type": "boolean",
+            "description": "This group of commitments contains unit based quantities which can be multiplied. Default false."
+          },
+          "hasBeginning": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The beginning date/time of the proposal's validity."
+          },
+          "hasEnd": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The ending date/time of the proposal's validity."
+          },
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date/time the proposal was created."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the proposal."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "lexicon": 1,
+  "id": "vf.recipe.recipeFlow",
+  "description": "The specification of a resource inflow to, or outflow from, a recipe process; and/or a clause, or reciprocal clause, of a recipe exchange.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Defines the kind of flow.",
+            "knownValues": [
+              "accept", "cite", "combine", "consume", "copy",
+              "deliver-service", "dropoff", "lower", "modify", "move",
+              "pickup", "produce", "raise", "separate", "transfer",
+              "transfer-all-rights", "transfer-custody", "use", "work"
+            ]
+          },
+          "resourceConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.resourceSpecification."
+          },
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for the resource."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the economic resource."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of effort."
+          },
+          "recipeInputOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.recipe.recipeProcess this flow is an input of."
+          },
+          "recipeOutputOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.recipe.recipeProcess this flow is an output of."
+          },
+          "recipeClauseOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.recipe.recipeExchange this flow is a primary clause of."
+          },
+          "recipeReciprocalClauseOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.recipe.recipeExchange this flow is a reciprocal clause of."
+          },
+          "stage": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.processSpecification for the required resource stage."
+          },
+          "state": {
+            "type": "string",
+            "description": "The required state of the desired resource."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the recipe flow."
+          }
+        }
+      }
+    }
+  }
+}

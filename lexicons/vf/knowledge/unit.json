@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "vf.knowledge.unit",
+  "description": "A standard unit of measure, defined and adopted by convention or by law.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["label"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "The display label for the unit of measure."
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The display symbol for the unit of measure (e.g. kg, m, hr)."
+          },
+          "omUnitIdentifier": {
+            "type": "string",
+            "format": "uri",
+            "description": "The unique URI identifier of the OM unit of measure, for standardization across networks."
+          },
+          "classifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for categorization."
+          }
+        }
+      }
+    }
+  }
+}

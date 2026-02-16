@@ -1,4 +1,0 @@
-type ProcessSpecification {
-  revision(revisionId: ID!): ProcessSpecification
-  meta: RecordMeta!
-}

@@ -1,132 +1,142 @@
 {
   "lexicon": 1,
   "id": "vf.observation.economicEvent",
+  "description": "An observed economic flow, which could reflect creation or a change in the quantity, location, accountability and/or responsibility, of an economic resource.",
   "defs": {
     "main": {
       "type": "record",
-      "description": "An observed economic flow, as opposed to a flow planned to happen in the future. This could reflect a change in the quantity of an economic resource.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["action"],
+        "required": ["action", "hasPointInTime"],
         "properties": {
           "action": {
-            "type": "ref",
-            "ref": "vf.observation.defs#action",
-            "description": "Relates an economic event to a verb, such as consume, produce, work, improve, etc."
+            "type": "string",
+            "description": "Defines the kind of flow, such as consume, produce, work, transfer, etc. Reference to a vf.knowledge.action label.",
+            "knownValues": [
+              "accept", "cite", "combine", "consume", "copy",
+              "deliver-service", "dropoff", "lower", "modify", "move",
+              "pickup", "produce", "raise", "separate", "transfer",
+              "transfer-all-rights", "transfer-custody", "use", "work"
+            ]
           },
           "provider": {
             "type": "string",
             "format": "did",
-            "description": "The economic agent from whom the actual economic event is initiated"
+            "description": "The economic agent who initiated the event."
           },
           "receiver": {
             "type": "string",
             "format": "did",
-            "description": "The economic agent whom the actual economic event is for"
+            "description": "The economic agent for whom the event is performed."
           },
           "resourceInventoriedAs": {
             "type": "string",
             "format": "at-uri",
-            "description": "Economic resource involved in the economic event"
+            "description": "Reference to the vf.observation.economicResource involved in the flow."
           },
           "toResourceInventoriedAs": {
             "type": "string",
             "format": "at-uri",
-            "description": "Additional economic resource on the receiving side for transfers or moves"
-          },
-          "resourceClassifiedAs": {
-            "type": "array",
-            "description": "References concepts in a common taxonomy for categorization",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "maxLength": 100
-          },
-          "resourceQuantity": {
-            "type": "ref",
-            "ref": "vf.observation.defs#measure",
-            "description": "The amount and unit of the economic resource counted or inventoried"
-          },
-          "effortQuantity": {
-            "type": "ref",
-            "ref": "vf.observation.defs#measure",
-            "description": "The amount and unit of the work or use or citation effort-based action"
-          },
-          "hasBeginning": {
-            "type": "string",
-            "format": "datetime",
-            "description": "The beginning of the economic event"
-          },
-          "hasEnd": {
-            "type": "string",
-            "format": "datetime",
-            "description": "The end of the economic event"
-          },
-          "hasPointInTime": {
-            "type": "string",
-            "format": "datetime",
-            "description": "The date/time at which the economic event occurred"
-          },
-          "inputOf": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Defines the process for which this event is an input"
-          },
-          "outputOf": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Defines the process for which this event is an output"
-          },
-          "agreedIn": {
-            "type": "string",
-            "format": "uri",
-            "description": "Reference to an agreement between agents which specifies the rules governing this event"
-          },
-          "triggeredBy": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "References another economic event that implied this economic event"
+            "description": "Additional economic resource on the event when needed by the receiver (used for transfers/moves)."
           },
           "resourceConformsTo": {
             "type": "string",
             "format": "at-uri",
-            "description": "The primary resource specification or definition of an existing or potential economic resource"
+            "description": "Reference to a vf.knowledge.resourceSpecification."
           },
-          "atLocation": {
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for the resource."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the economic resource counted or inventoried."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the work or use or citation effort-based action."
+          },
+          "hasPointInTime": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The actual date/time of the event."
+          },
+          "hasBeginning": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The actual beginning date/time of the event."
+          },
+          "hasEnd": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The actual ending date/time of the event."
+          },
+          "inputOf": {
             "type": "string",
             "format": "at-uri",
-            "description": "The place where an economic event occurs. Usually mappable."
+            "description": "Reference to a vf.planning.process this event is an input of."
+          },
+          "outputOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.planning.process this event is an output of."
+          },
+          "realizationOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.agreement.agreement this event realizes."
+          },
+          "reciprocalRealizationOf": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.agreement.agreement this reciprocal event realizes."
+          },
+          "corrects": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.observation.economicEvent that this event corrects."
           },
           "toLocation": {
             "type": "string",
             "format": "at-uri",
-            "description": "The new location of the receiver resource for transfers or moves"
+            "description": "Reference to a vf.geo.spatialThing for the new location of the receiver resource."
           },
-          "inScopeOf": {
+          "fulfills": {
             "type": "array",
-            "description": "Grouping around something to create a boundary or context, used for documenting, accounting, planning",
-            "items": {
-              "type": "string",
-              "format": "at-uri"
-            },
-            "maxLength": 50
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.commitment records fulfilled completely or partially by this event."
           },
-          "resourceQuantityHas": {
+          "satisfies": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.intent records satisfied fully or partially by this event."
+          },
+          "settles": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.claim records settled fully or partially by this event."
+          },
+          "state": {
             "type": "string",
-            "format": "at-uri",
-            "description": "Reference to ProductBatch for lot/batch tracking"
-          },
-          "deletable": {
-            "type": "boolean",
-            "description": "The economic event can be safely deleted, has no dependent information"
+            "description": "The state of the resource after this event."
           },
           "note": {
             "type": "string",
-            "description": "A textual description or comment",
-            "maxGraphemes": 3000,
-            "maxLength": 10000
+            "description": "Any useful textual information about the event."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI to an image relevant to the event."
+          },
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date/time the event was recorded."
           }
         }
       }

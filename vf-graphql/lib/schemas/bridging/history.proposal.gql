@@ -1,9 +1,0 @@
-type Proposal {
-  revision(revisionId: ID!): Proposal
-  meta: RecordMeta!
-}
-
-type ProposedIntent {
-  revision(revisionId: ID!): ProposedIntent
-  meta: RecordMeta!
-}

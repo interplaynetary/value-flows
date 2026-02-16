@@ -1,4 +1,0 @@
-type Commitment {
-  revision(revisionId: ID!): Commitment
-  meta: RecordMeta!
-}

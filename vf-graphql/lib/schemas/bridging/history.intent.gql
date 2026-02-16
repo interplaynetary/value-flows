@@ -1,4 +1,0 @@
-type Intent {
-  revision(revisionId: ID!): Intent
-  meta: RecordMeta!
-}

@@ -1,4 +1,0 @@
-type SpatialThing {
-  revision(revisionId: ID!): SpatialThing
-  meta: RecordMeta!
-}

@@ -1,0 +1,55 @@
+{
+  "lexicon": 1,
+  "id": "vf.recipe.recipeProcess",
+  "description": "Specifies a process in a recipe for use in planning from recipe.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for the recipe process."
+          },
+          "processConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.knowledge.processSpecification this recipe process conforms to."
+          },
+          "processClassifiedAs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification URIs or tags for the process."
+          },
+          "hasDuration": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The temporal extent of the process, expressed as a duration measure."
+          },
+          "hasRecipeInput": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.recipe.recipeFlow records that are inputs of this recipe process."
+          },
+          "hasRecipeOutput": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.recipe.recipeFlow records that are outputs of this recipe process."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URI to an image relevant to the recipe process."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information about the recipe process."
+          }
+        }
+      }
+    }
+  }
+}

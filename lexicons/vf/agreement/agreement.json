@@ -1,29 +1,56 @@
 {
   "lexicon": 1,
   "id": "vf.agreement.agreement",
+  "description": "A set of reciprocal commitments among economic agents, and/or a set of reciprocal economic events.",
   "defs": {
     "main": {
       "type": "record",
-      "description": "Any type of agreement among economic agents",
       "key": "tid",
       "record": {
         "type": "object",
+        "required": ["name"],
         "properties": {
           "name": {
             "type": "string",
-            "description": "An informal or formal textual identifier for an agreement",
-            "maxLength": 500
+            "description": "An informal or formal textual identifier for the agreement."
           },
           "created": {
             "type": "string",
             "format": "datetime",
-            "description": "The date and time the agreement was created"
+            "description": "The date/time the agreement was created."
+          },
+          "bundledIn": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Reference to a vf.agreement.agreementBundle this agreement is part of."
+          },
+          "unitBased": {
+            "type": "boolean",
+            "description": "This group of commitments contains unit based quantities which can be multiplied. Default false."
+          },
+          "stipulates": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.commitment records that are the primary clauses of this agreement."
+          },
+          "stipulatesReciprocal": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.planning.commitment records that are the reciprocal clauses of this agreement."
+          },
+          "realizes": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.observation.economicEvent records that realize this agreement."
+          },
+          "realizesReciprocal": {
+            "type": "array",
+            "items": { "type": "string", "format": "at-uri" },
+            "description": "References to vf.observation.economicEvent records that are the reciprocal realization of this agreement."
           },
           "note": {
             "type": "string",
-            "description": "A textual description or comment",
-            "maxGraphemes": 3000,
-            "maxLength": 10000
+            "description": "Any useful textual information about the agreement."
           }
         }
       }
