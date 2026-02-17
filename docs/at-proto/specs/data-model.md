@@ -88,8 +88,6 @@ For example, a node with a single field "exampleLink" with type link would encod
 }
 }
 
-Copy
-Copied!
 For comparison, this is very similar to the DAG-JSON encoding, but substitutes $link as the key name instead of / (single-character, forward slash).
 
 bytes
@@ -103,8 +101,6 @@ For example, a node with a single field "exampleBytes" with type bytes would be 
 }
 }
 
-Copy
-Copied!
 For comparison, the DAG-JSON encoding has two nested objects, with outer key / (single-character, forward slash), inner key bytes, and the same base64 encoding.
 
 Link and CID Formats

@@ -35,8 +35,6 @@ A reference regex for NSID is:
 
 /^[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(\.[a-zA-Z]([a-zA-Z0-9]{0,62})?)$/
 
-Copy
-Copied!
 NSID Syntax Variations
 When referring to a group or pattern of NSIDs, a trailing ASCII star character (_) can be used as a "glob" character. For example, com.atproto._ would refer to any NSIDs under the atproto.com domain authority, including nested sub-domains (sub-authorities). A free-standing \* would match all NSIDs from all authorities. Currently, there may be only a single star character; it must be the last character; and it must be at a segment boundary (no partial matching of segment names). This means the start character must be proceeded by a period, or be a bare star matching all NSIDs.
 
@@ -50,16 +48,12 @@ a.b.c
 com.example.fooBarV2
 cn.8.lex.stuff
 
-Copy
-Copied!
 Invalid NSIDs:
 
 com.exa💩ple.thing
 com.example
 com.example.3
 
-Copy
-Copied!
 Usage and Implementation Guidelines
 A strongly-encouraged best practice is to use authority domains with only ASCII alphabetic characters (that is, no digits or hyphens). This makes it significantly easier to generate client libraries in most programming languages.
 

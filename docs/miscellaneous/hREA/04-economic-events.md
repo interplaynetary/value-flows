@@ -41,33 +41,37 @@ pub struct ReaEconomicEvent {
 ### Field Explanations
 
 #### Essential Fields
-| Field | Type | Description | Required |
-|-------|------|-------------|----------|
-| `rea_action` | `String` | Type of economic action (transfer, produce, consume, etc.) | ✅ |
-| `provider` | `Option<ActionHash>` | Agent providing the resource | Recommended |
-| `receiver` | `Option<ActionHash>` | Agent receiving the resource | Recommended |
-| `resource_quantity` | `Option<QuantityValue>` | Amount of resource involved | Recommended |
+
+| Field               | Type                    | Description                                                | Required    |
+| ------------------- | ----------------------- | ---------------------------------------------------------- | ----------- |
+| `rea_action`        | `String`                | Type of economic action (transfer, produce, consume, etc.) | ✅          |
+| `provider`          | `Option<ActionHash>`    | Agent providing the resource                               | Recommended |
+| `receiver`          | `Option<ActionHash>`    | Agent receiving the resource                               | Recommended |
+| `resource_quantity` | `Option<QuantityValue>` | Amount of resource involved                                | Recommended |
 
 #### Temporal Fields
-| Field | Type | Description | Use Case |
-|-------|------|-------------|----------|
-| `has_point_in_time` | `Option<Timestamp>` | Exact moment of event | Instantaneous events |
-| `has_beginning` | `Option<Timestamp>` | Event start time | Duration-based events |
-| `has_end` | `Option<Timestamp>`` | Event end time | Duration-based events |
+
+| Field               | Type                | Description           | Use Case              |
+| ------------------- | ------------------- | --------------------- | --------------------- |
+| `has_point_in_time` | `Option<Timestamp>` | Exact moment of event | Instantaneous events  |
+| `has_beginning`     | `Option<Timestamp>` | Event start time      | Duration-based events |
+| `has_end`           | `Option<Timestamp>` | Event end time        | Duration-based events |
 
 #### Process Context
-| Field | Type | Description | Relationship |
-|-------|------|-------------|-----------|
-| `input_of` | `Option<ActionHash>` | Process consuming this event | Event → Process |
+
+| Field       | Type                 | Description                  | Relationship    |
+| ----------- | -------------------- | ---------------------------- | --------------- |
+| `input_of`  | `Option<ActionHash>` | Process consuming this event | Event → Process |
 | `output_of` | `Option<ActionHash>` | Process producing this event | Process → Event |
 
 #### Agreement Context
-| Field | Type | Description | Purpose |
-|-------|------|-------------|---------|
-| `realization_of` | `Option<ActionHash>` | Agreement being implemented | Contract fulfillment |
-| `agreed_in` | `Option<String>` | External agreement reference | Legal documentation |
-| `fulfills` | `Option<Vec<ActionHash>>` | Commitments being satisfied | Promise completion |
-| `satisfies` | `Option<Vec<ActionHash>>` | Intentions being satisfied | Need fulfillment |
+
+| Field            | Type                      | Description                  | Purpose              |
+| ---------------- | ------------------------- | ---------------------------- | -------------------- |
+| `realization_of` | `Option<ActionHash>`      | Agreement being implemented  | Contract fulfillment |
+| `agreed_in`      | `Option<String>`          | External agreement reference | Legal documentation  |
+| `fulfills`       | `Option<Vec<ActionHash>>` | Commitments being satisfied  | Promise completion   |
+| `satisfies`      | `Option<Vec<ActionHash>>` | Intentions being satisfied   | Need fulfillment     |
 
 ## Economic Actions
 
@@ -76,21 +80,21 @@ pub struct ReaEconomicEvent {
 #### Resource Movement Actions
 
 **Transfer (`transfer`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "provider-agent-id"
-    receiver: "receiver-agent-id"
-    resourceInventoriedAs: "source-resource-id"
-    toResourceInventoriedAs: "destination-resource-id"
-    resourceQuantity: {
-      hasNumericalValue: 100
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "provider-agent-id"
+      receiver: "receiver-agent-id"
+      resourceInventoriedAs: "source-resource-id"
+      toResourceInventoriedAs: "destination-resource-id"
+      resourceQuantity: { hasNumericalValue: 100, hasUnit: "kg" }
+      hasPointInTime: "2024-03-15T10:00:00Z"
+      atLocation: "Warehouse A, Loading Dock 3"
     }
-    hasPointInTime: "2024-03-15T10:00:00Z"
-    atLocation: "Warehouse A, Loading Dock 3"
-  }) {
+  ) {
     economicEvent {
       id
       action
@@ -106,21 +110,21 @@ mutation {
 ```
 
 **Raise (`raise`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "raise"
-    provider: "farm-agent-id"
-    resourceInventoriedAs: "new-harvest-resource-id"
-    resourceClassifiedAs: ["vegetables", "organic-tomatoes"]
-    resourceQuantity: {
-      hasNumericalValue: 500
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "raise"
+      provider: "farm-agent-id"
+      resourceInventoriedAs: "new-harvest-resource-id"
+      resourceClassifiedAs: ["vegetables", "organic-tomatoes"]
+      resourceQuantity: { hasNumericalValue: 500, hasUnit: "kg" }
+      hasPointInTime: "2024-08-20T06:00:00Z"
+      atLocation: "Greenhouse #3"
+      note: "Summer tomato harvest"
     }
-    hasPointInTime: "2024-08-20T06:00:00Z"
-    atLocation: "Greenhouse #3"
-    note: "Summer tomato harvest"
-  }) {
+  ) {
     economicEvent {
       id
       action
@@ -131,19 +135,19 @@ mutation {
 ```
 
 **Lower (`lower`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "lower"
-    provider: "manufacturer-id"
-    resourceInventoriedAs: "raw-materials-resource-id"
-    resourceQuantity: {
-      hasNumericalValue: 50
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "lower"
+      provider: "manufacturer-id"
+      resourceInventoriedAs: "raw-materials-resource-id"
+      resourceQuantity: { hasNumericalValue: 50, hasUnit: "kg" }
+      hasPointInTime: "2024-03-15T14:30:00Z"
+      note: "Materials consumed in production run #1234"
     }
-    hasPointInTime: "2024-03-15T14:30:00Z"
-    note: "Materials consumed in production run #1234"
-  }) {
+  ) {
     economicEvent {
       id
       action
@@ -161,21 +165,21 @@ mutation {
 #### Process-Related Actions
 
 **Produce (`produce`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "produce"
-    outputOf: "manufacturing-process-id"
-    provider: "factory-agent-id"
-    resourceInventoriedAs: "finished-goods-id"
-    resourceClassifiedAs: ["electronics", "smartphone"]
-    resourceQuantity: {
-      hasNumericalValue: 1000
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "produce"
+      outputOf: "manufacturing-process-id"
+      provider: "factory-agent-id"
+      resourceInventoriedAs: "finished-goods-id"
+      resourceClassifiedAs: ["electronics", "smartphone"]
+      resourceQuantity: { hasNumericalValue: 1000, hasUnit: "units" }
+      hasPointInTime: "2024-03-15T16:00:00Z"
+      atLocation: "Production Line A"
     }
-    hasPointInTime: "2024-03-15T16:00:00Z"
-    atLocation: "Production Line A"
-  }) {
+  ) {
     economicEvent {
       id
       action
@@ -188,20 +192,20 @@ mutation {
 ```
 
 **Consume (`consume`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "consume"
-    inputOf: "assembly-process-id"
-    provider: "component-supplier-id"
-    resourceInventoriedAs: "components-inventory-id"
-    resourceClassifiedAs: ["electronics", "circuit-boards"]
-    resourceQuantity: {
-      hasNumericalValue: 1000
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "consume"
+      inputOf: "assembly-process-id"
+      provider: "component-supplier-id"
+      resourceInventoriedAs: "components-inventory-id"
+      resourceClassifiedAs: ["electronics", "circuit-boards"]
+      resourceQuantity: { hasNumericalValue: 1000, hasUnit: "units" }
+      hasPointInTime: "2024-03-15T11:00:00Z"
     }
-    hasPointInTime: "2024-03-15T11:00:00Z"
-  }) {
+  ) {
     economicEvent {
       id
       action
@@ -216,19 +220,22 @@ mutation {
 #### Service Actions
 
 **Service (`service`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "service"
-    provider: "consultant-id"
-    receiver: "client-id"
-    resourceClassifiedAs: ["consulting", "sustainability-advisory"]
-    hasPointInTime: "2024-03-15T13:00:00Z"
-    hasEnd: "2024-03-15T17:00:00Z"
-    agreedIn: "CONSULT-2024-001"
-    realizationOf: "consulting-agreement-id"
-    note: "Sustainability assessment and recommendations"
-  }) {
+  createEconomicEvent(
+    event: {
+      action: "service"
+      provider: "consultant-id"
+      receiver: "client-id"
+      resourceClassifiedAs: ["consulting", "sustainability-advisory"]
+      hasPointInTime: "2024-03-15T13:00:00Z"
+      hasEnd: "2024-03-15T17:00:00Z"
+      agreedIn: "CONSULT-2024-001"
+      realizationOf: "consulting-agreement-id"
+      note: "Sustainability assessment and recommendations"
+    }
+  ) {
     economicEvent {
       id
       action
@@ -242,17 +249,20 @@ mutation {
 #### Use Action
 
 **Use (`use`)**
+
 ```graphql
 mutation {
-  createEconomicEvent(event: {
-    action: "use"
-    provider: "equipment-owner-id"
-    resourceInventoriedAs: "machinery-id"
-    resourceClassifiedAs: ["equipment", "industrial-mixer"]
-    hasPointInTime: "2024-03-15T09:00:00Z"
-    hasEnd: "2024-03-15T12:00:00Z"
-    note: "Equipment used for batch #567 production"
-  }) {
+  createEconomicEvent(
+    event: {
+      action: "use"
+      provider: "equipment-owner-id"
+      resourceInventoriedAs: "machinery-id"
+      resourceClassifiedAs: ["equipment", "industrial-mixer"]
+      hasPointInTime: "2024-03-15T09:00:00Z"
+      hasEnd: "2024-03-15T12:00:00Z"
+      note: "Equipment used for batch #567 production"
+    }
+  ) {
     economicEvent {
       id
       action
@@ -276,30 +286,35 @@ pub struct QuantityValue {
 ### Common Units and Measurements
 
 #### Weight Units
+
 - `kg` - Kilograms
 - `g` - Grams
 - `t` - Metric tons
 - `lb` - Pounds
 
 #### Volume Units
+
 - `L` - Liters
 - `mL` - Milliliters
 - `m3` - Cubic meters
 - `gal` - Gallons
 
 #### Count Units
+
 - `units` - Individual items
 - `pairs` - Paired items
 - `sets` - Complete sets
 - `dozens` - Groups of 12
 
 #### Time Units
+
 - `hours` - Hours
 - `days` - Days
 - `months` - Months
 - `years` - Years
 
 #### Area Units
+
 - `m2` - Square meters
 - `ha` - Hectares
 - `acres` - Acres
@@ -310,6 +325,7 @@ pub struct QuantityValue {
 ### Classification Hierarchies
 
 #### Product Classifications
+
 ```json
 {
   "resource_classified_as": [
@@ -322,6 +338,7 @@ pub struct QuantityValue {
 ```
 
 #### Service Classifications
+
 ```json
 {
   "resource_classified_as": [
@@ -333,6 +350,7 @@ pub struct QuantityValue {
 ```
 
 #### Material Classifications
+
 ```json
 {
   "resource_classified_as": [
@@ -353,18 +371,17 @@ Events that provide resources to processes:
 ```graphql
 # Raw material input to manufacturing
 mutation {
-  createEconomicEvent(event: {
-    action: "consume"
-    inputOf: "battery-manufacturing-id"
-    provider: "materials-supplier-id"
-    resourceInventoriedAs: "lithium-inventory-id"
-    resourceClassifiedAs: ["materials", "lithium", "battery-grade"]
-    resourceQuantity: {
-      hasNumericalValue: 500
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "consume"
+      inputOf: "battery-manufacturing-id"
+      provider: "materials-supplier-id"
+      resourceInventoriedAs: "lithium-inventory-id"
+      resourceClassifiedAs: ["materials", "lithium", "battery-grade"]
+      resourceQuantity: { hasNumericalValue: 500, hasUnit: "kg" }
+      hasPointInTime: "2024-03-15T08:00:00Z"
     }
-    hasPointInTime: "2024-03-15T08:00:00Z"
-  }) {
+  ) {
     economicEvent {
       id
       inputOf {
@@ -383,18 +400,17 @@ Events that result from processes:
 ```graphql
 # Finished product from manufacturing
 mutation {
-  createEconomicEvent(event: {
-    action: "produce"
-    outputOf: "battery-manufacturing-id"
-    provider: "manufacturer-id"
-    resourceInventoriedAs: "battery-inventory-id"
-    resourceClassifiedAs: ["electronics", "batteries", "lithium-ion"]
-    resourceQuantity: {
-      hasNumericalValue: 1000
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "produce"
+      outputOf: "battery-manufacturing-id"
+      provider: "manufacturer-id"
+      resourceInventoriedAs: "battery-inventory-id"
+      resourceClassifiedAs: ["electronics", "batteries", "lithium-ion"]
+      resourceQuantity: { hasNumericalValue: 1000, hasUnit: "units" }
+      hasPointInTime: "2024-03-15T18:00:00Z"
     }
-    hasPointInTime: "2024-03-15T18:00:00Z"
-  }) {
+  ) {
     economicEvent {
       id
       outputOf {
@@ -413,20 +429,19 @@ mutation {
 ```graphql
 # Fulfill a delivery commitment
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "supplier-id"
-    receiver: "customer-id"
-    resourceInventoriedAs: "product-inventory-id"
-    resourceQuantity: {
-      hasNumericalValue: 100
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "supplier-id"
+      receiver: "customer-id"
+      resourceInventoriedAs: "product-inventory-id"
+      resourceQuantity: { hasNumericalValue: 100, hasUnit: "units" }
+      hasPointInTime: "2024-03-15T10:00:00Z"
+      fulfills: ["delivery-commitment-action-hash"]
+      realizationOf: "purchase-order-agreement-id"
+      agreedIn: "PO-2024-001234"
     }
-    hasPointInTime: "2024-03-15T10:00:00Z"
-    fulfills: ["delivery-commitment-action-hash"]
-    realizationOf: "purchase-order-agreement-id"
-    agreedIn: "PO-2024-001234"
-  }) {
+  ) {
     economicEvent {
       id
       fulfills {
@@ -446,20 +461,19 @@ mutation {
 ```graphql
 # Satisfy a resource need
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "donor-id"
-    receiver: "charity-id"
-    resourceInventoriedAs: "food-supplies-id"
-    resourceClassifiedAs: ["food", "canned-goods"]
-    resourceQuantity: {
-      hasNumericalValue: 500
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "donor-id"
+      receiver: "charity-id"
+      resourceInventoriedAs: "food-supplies-id"
+      resourceClassifiedAs: ["food", "canned-goods"]
+      resourceQuantity: { hasNumericalValue: 500, hasUnit: "kg" }
+      hasPointInTime: "2024-03-15T14:00:00Z"
+      satisfies: ["food-need-intention-action-hash"]
+      note: "Emergency food donation"
     }
-    hasPointInTime: "2024-03-15T14:00:00Z"
-    satisfies: ["food-need-intention-action-hash"]
-    note: "Emergency food donation"
-  }) {
+  ) {
     economicEvent {
       id
       satisfies {
@@ -477,18 +491,17 @@ mutation {
 ```graphql
 # Event with detailed location
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "warehouse-agent-id"
-    receiver: "retail-store-id"
-    resourceInventoriedAs: "inventory-id"
-    resourceQuantity: {
-      hasNumericalValue: 50
-      hasUnit: "cases"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "warehouse-agent-id"
+      receiver: "retail-store-id"
+      resourceInventoriedAs: "inventory-id"
+      resourceQuantity: { hasNumericalValue: 50, hasUnit: "cases" }
+      hasPointInTime: "2024-03-15T09:00:00Z"
+      atLocation: "Main Warehouse, Aisle 12, Section B, Position 3"
     }
-    hasPointInTime: "2024-03-15T09:00:00Z"
-    atLocation: "Main Warehouse, Aisle 12, Section B, Position 3"
-  }) {
+  ) {
     economicEvent {
       id
       atLocation
@@ -502,18 +515,17 @@ mutation {
 ```graphql
 # For events spanning multiple locations
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "farm-id"
-    receiver: "processing-facility-id"
-    resourceInventoriedAs: "harvest-id"
-    resourceQuantity: {
-      hasNumericalValue: 2000
-      hasUnit: "kg"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "farm-id"
+      receiver: "processing-facility-id"
+      resourceInventoriedAs: "harvest-id"
+      resourceQuantity: { hasNumericalValue: 2000, hasUnit: "kg" }
+      hasPointInTime: "2024-03-15T06:00:00Z"
+      note: "Transport from Farm Location A (GPS: 40.7128,-74.0060) to Processing Facility B (GPS: 40.7589,-73.9851)"
     }
-    hasPointInTime: "2024-03-15T06:00:00Z"
-    note: "Transport from Farm Location A (GPS: 40.7128,-74.0060) to Processing Facility B (GPS: 40.7589,-73.9851)"
-  }) {
+  ) {
     economicEvent {
       id
       note
@@ -529,19 +541,18 @@ mutation {
 ```graphql
 # Event triggered by another event
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "quality-control-id"
-    receiver: "shipping-id"
-    resourceInventoriedAs: "approved-products-id"
-    resourceQuantity: {
-      hasNumericalValue: 500
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "quality-control-id"
+      receiver: "shipping-id"
+      resourceInventoriedAs: "approved-products-id"
+      resourceQuantity: { hasNumericalValue: 500, hasUnit: "units" }
+      hasPointInTime: "2024-03-15T16:00:00Z"
+      triggeredBy: "quality-inspection-event-action-hash"
+      note: "Products approved for shipment after quality inspection"
     }
-    hasPointInTime: "2024-03-15T16:00:00Z"
-    triggeredBy: "quality-inspection-event-action-hash"
-    note: "Products approved for shipment after quality inspection"
-  }) {
+  ) {
     economicEvent {
       id
       triggeredBy {
@@ -558,19 +569,21 @@ mutation {
 ```graphql
 # Correct a previous event
 mutation {
-  createEconomicEvent(event: {
-    action: "transfer"
-    provider: "warehouse-id"
-    receiver: "customer-id"
-    resourceInventoriedAs: "product-id"
-    resourceQuantity: {
-      hasNumericalValue: 95  # Corrected from 100
-      hasUnit: "units"
+  createEconomicEvent(
+    event: {
+      action: "transfer"
+      provider: "warehouse-id"
+      receiver: "customer-id"
+      resourceInventoriedAs: "product-id"
+      resourceQuantity: {
+        hasNumericalValue: 95 # Corrected from 100
+        hasUnit: "units"
+      }
+      hasPointInTime: "2024-03-15T11:30:00Z"
+      corrects: "original-shipment-event-action-hash"
+      note: "Correction: Initial count was incorrect, actual quantity was 95 units"
     }
-    hasPointInTime: "2024-03-15T11:30:00Z"
-    corrects: "original-shipment-event-action-hash"
-    note: "Correction: Initial count was incorrect, actual quantity was 95 units"
-  }) {
+  ) {
     economicEvent {
       id
       corrects {
@@ -619,10 +632,7 @@ query FilteredEconomicEvents {
     filters: {
       reaAction: "transfer"
       resourceClassifiedAs: ["organic", "vegetables"]
-      dateRange: {
-        start: "2024-03-01T00:00:00Z"
-        end: "2024-03-31T23:59:59Z"
-      }
+      dateRange: { start: "2024-03-01T00:00:00Z", end: "2024-03-31T23:59:59Z" }
       provider: "supplier-agent-id"
     }
   ) {

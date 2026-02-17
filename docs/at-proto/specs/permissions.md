@@ -65,8 +65,6 @@ repo:\*
 
 repo:\*?action=delete
 
-Copy
-Copied!
 rpc
 The ability to make authenticated API requests to remote services. This includes both requesting service auth tokens (JWTs) using the com.atproto.server.getServiceAuth endpoint on the PDS, and requests proxied via the PDS.
 
@@ -98,8 +96,6 @@ rpc:app.example.moderation.createReport?aud=\*
 
 rpc?lxm=\*&aud=did:web:api.example.com%23svc_appview
 
-Copy
-Copied!
 blob
 Ability to upload media files (blobs) to PDS.
 
@@ -118,8 +114,6 @@ blob:_/_
 
 blob?accept=video/\*&accept=text/html
 
-Copy
-Copied!
 account
 Control of PDS account hosting details, such as (private) account email.
 
@@ -143,8 +137,6 @@ account:email
 
 account:repo?action=manage
 
-Copy
-Copied!
 identity
 Control over network identity, meaning the account DID document and handle. Note that the PDS might not be able to facilitate identity changes if it does not have control over the DID document (for example, when the account uses did:web).
 
@@ -164,8 +156,6 @@ handle: ability to update handle. This includes the registration of the handle i
 
 identity:handle
 
-Copy
-Copied!
 Scope String Syntax
 Permissions need to be represented as simple strings when they are requested directly as OAuth scopes. This section describes the syntax for permission scope strings.
 
@@ -184,8 +174,6 @@ blob?accept=video/_&accept=text/html
 repo:app.example.profile?action=create&action=update&action=delete
 include:app.example.authFull?aud=did:web:api.example.com%23svc_chat
 
-Copy
-Copied!
 Scope strings that match the general syntax, but do not have valid semantics under the current resource definitions:
 
 resource
@@ -197,15 +185,11 @@ resource:?
 resource:&
 resource?
 
-Copy
-Copied!
 Examples which do not match the general syntax:
 
 resource:positional?key=québec
 emoji:☺️
 
-Copy
-Copied!
 Permission Sets
 Full-featured client apps require a large number of granular permissions to function: dozens or even hundreds of individual permissions. This presents a user experience and security challenge, as long lists of permissions are unlikely to be reviewed carefully, and a developer experience issue, as defining and maintaining these lists is toilsome.
 
@@ -265,14 +249,10 @@ The below is an example permission set Lexicon. The full syntax is described in 
 }
 }
 
-Copy
-Copied!
 This entire set of permissions could be requested with an auth scope string like:
 
 include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview
 
-Copy
-Copied!
 Because some of the rpc permissions have the inheritAud flag set to true, the aud parameter on the include will be passed down to those specific rpc permissions. If the aud had not been part of the include, the default value (no audience) would have been used instead.
 
 Permission sets are Lexicon schemas and are published and fetched using the Lexicon resolution system, which includes cryptographic authentication. Permission sets can be updated over time as new schemas are added to a namespace (eg, new record types or API endpoints). Authorization Servers are expected to maintain a cache of resolved sets, but to re-resolve them periodically. The permissions associated with an Access Token should remain fixed, but when a client refreshes their tokens (obtaining a new access token), the computed permissions for the session may be updated to reflect changes to sets requested by the client.

@@ -17,62 +17,137 @@
  * - ExternalLink not a VF record type — skip it from domain lists
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { join, dirname } from "path";
+import classToNsid from "../../specs/vf/class-to-nsid.json";
 
-const AUDIT_MODE = Bun.argv.includes("--audit");
+// ─── interfaces ──────────────────────────────────────────────────────────────
 
-const ROOT = join(import.meta.dir, "..");
-const vfJson = JSON.parse(readFileSync(join(ROOT, "specs/vf.json"), "utf-8"));
-const graph = vfJson["@graph"];
+interface OwlNode {
+  "@id": string;
+  "@type"?: string | string[];
+  "rdfs:label"?: string | { "@value": string };
+  "rdfs:comment"?: string | { "@value": string };
+  "rdfs:domain"?: { "@id": string } | { "owl:unionOf": OwlUnion };
+  "rdfs:range"?: { "@id": string } | { "owl:unionOf": OwlUnion };
+  "rdfs:subClassOf"?: { "@id": string };
+  "owl:unionOf"?: OwlUnion;
+  "owl:inverseOf"?: { "@id": string };
+  "owl:cardinality"?: number;
+  "owl:maxCardinality"?: number;
+  "vs:term_status"?: string;
+  [key: string]: unknown;
+}
+
+type OwlUnion = { "@list": { "@id": string }[] } | { "@id": string }[];
+
+interface VfClass {
+  label: string;
+  comment: string;
+  status: string;
+  subClassOf: string | null;
+}
+
+interface VfProperty {
+  domains: string[];
+  range: string | string[] | null;
+  maxCard: number | null;
+  type: "object" | "datatype";
+  comment: string;
+  label: string;
+  inverseOf: string | null;
+  status: string;
+}
+
+interface NamedIndividual {
+  types: string[];
+  label: string;
+  comment: string;
+  status: string;
+  node: OwlNode;
+}
+
+interface LexiconTypeDef {
+  type: string;
+  format?: string;
+  ref?: string;
+  description?: string;
+  knownValues?: string[];
+  items?: LexiconTypeDef;
+  maxGraphemes?: number;
+}
+
+interface LexiconDocument {
+  lexicon: number;
+  id: string;
+  defs: Record<string, any>;
+}
+
+interface AuditReport {
+  classesNotMapped: { class: string; label?: string; status?: string; nsid?: string; error?: string }[];
+  missingFromLexicon: { nsid: string; property: string; rangeType: string; owlType: string; comment: string; status: string }[];
+  extraInLexicon: { nsid: string; property: string; lexiconType: string; lexiconFormat?: string; description?: string }[];
+  typeMismatches: { nsid: string; property: string; vfRange: string; lexiconType: string; lexiconFormat?: string; lexiconRef?: string; issues: string[] }[];
+  summary: { total: number; missing: number; extra: number; mismatched: number };
+}
+
+// ─── setup ───────────────────────────────────────────────────────────────────
+
+const AUDIT_MODE: boolean = Bun.argv.includes("--audit");
+
+const ROOT: string = join(import.meta.dir, "..", "..");
+const vfJson: { "@graph": OwlNode[] } = JSON.parse(readFileSync(join(ROOT, "specs/vf/vf.json"), "utf-8"));
+const graph: OwlNode[] = vfJson["@graph"];
+
+const CLASS_TO_NSID: Record<string, string> = classToNsid;
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function getTypes(node) {
+function getTypes(node: OwlNode): string[] {
   const t = node["@type"];
   if (!t) return [];
   return Array.isArray(t) ? t : [t];
 }
 
-function stripVf(id) {
-  if (!id) return id;
+function stripVf(id: string | undefined): string {
+  if (!id) return "";
   return id.replace(/^vf:/, "");
 }
 
 // Pre-index: named domain/range union classes (e.g., vf:ActionDomain → [EconomicEvent, Commitment, ...])
-const namedUnionClasses = {};
+const namedUnionClasses: Record<string, string[]> = {};
 for (const n of graph) {
   const id = stripVf(n["@id"]);
-  const types = Array.isArray(n["@type"]) ? n["@type"] : [n["@type"]];
+  const types: string[] = Array.isArray(n["@type"]) ? n["@type"] : [n["@type"] as string];
   if (types.includes("owl:Class") && n["owl:unionOf"]) {
-    let union = n["owl:unionOf"];
-    if (union["@list"]) union = union["@list"];
+    let union: unknown = n["owl:unionOf"];
+    if (union && typeof union === "object" && "@list" in (union as object)) union = (union as { "@list": unknown[] })["@list"];
     if (Array.isArray(union)) {
-      namedUnionClasses[id] = union.map((u) => stripVf(u["@id"])).filter(Boolean);
+      namedUnionClasses[id] = union.map((u: { "@id": string }) => stripVf(u["@id"])).filter(Boolean);
     }
   }
 }
 
-function resolveUnion(ref) {
+function resolveUnion(ref: string): string[] {
   // If the ref is a named union class, return its members; otherwise return [ref]
   const name = stripVf(ref);
   if (namedUnionClasses[name]) return namedUnionClasses[name];
   return [name];
 }
 
-function getDomainClasses(node) {
-  const dom = node["rdfs:domain"];
+function getDomainClasses(node: OwlNode): string[] {
+  const dom = node["rdfs:domain"] as { "@id"?: string; "owl:unionOf"?: OwlUnion } | undefined;
   if (!dom) return [];
   if (dom["@id"]) return resolveUnion(dom["@id"]);
-  let union = dom["owl:unionOf"];
+  let union: unknown = dom["owl:unionOf"];
   if (!union) return [];
-  if (union["@list"]) union = union["@list"];
+  if (typeof union === "object" && union !== null && "@list" in union) union = (union as { "@list": unknown[] })["@list"];
   if (!Array.isArray(union)) return [];
-  return union.map((u) => stripVf(u["@id"])).filter(Boolean);
+  return union.map((u: { "@id": string }) => stripVf(u["@id"])).filter(Boolean);
 }
 
-function getRangeId(node) {
-  const r = node["rdfs:range"];
+function getRangeId(node: OwlNode): string | string[] | null {
+  const r = node["rdfs:range"] as { "@id"?: string; "owl:unionOf"?: OwlUnion } | undefined;
   if (!r) return null;
   if (r["@id"]) {
     const name = stripVf(r["@id"]);
@@ -81,46 +156,46 @@ function getRangeId(node) {
     return name;
   }
   // Inline union range
-  let union = r["owl:unionOf"];
+  let union: unknown = r["owl:unionOf"];
   if (union) {
-    if (union["@list"]) union = union["@list"];
+    if (typeof union === "object" && union !== null && "@list" in union) union = (union as { "@list": unknown[] })["@list"];
     if (Array.isArray(union)) {
-      return union.map((u) => stripVf(u["@id"])).filter(Boolean);
+      return union.map((u: { "@id": string }) => stripVf(u["@id"])).filter(Boolean);
     }
   }
   return null;
 }
 
-function getComment(node) {
+function getComment(node: OwlNode): string {
   const c = node["rdfs:comment"];
   if (!c) return "";
   if (typeof c === "string") return c;
-  return c["@value"] || "";
+  return (c as { "@value": string })["@value"] || "";
 }
 
-function getLabel(node) {
+function getLabel(node: OwlNode): string {
   const l = node["rdfs:label"];
   if (!l) return "";
   if (typeof l === "string") return l;
-  return l["@value"] || "";
+  return (l as { "@value": string })["@value"] || "";
 }
 
-function getMaxCard(node) {
-  if (node["owl:cardinality"] !== undefined) return node["owl:cardinality"];
+function getMaxCard(node: OwlNode): number | null {
+  if (node["owl:cardinality"] !== undefined) return node["owl:cardinality"] as number;
   if (node["owl:maxCardinality"] !== undefined)
-    return node["owl:maxCardinality"];
+    return node["owl:maxCardinality"] as number;
   return null;
 }
 
 // ─── parse all nodes ────────────────────────────────────────────────────────
 
-const classes = {}; // className -> { label, comment, status, subClassOf }
-const properties = {}; // propName -> { domains, range, maxCard, type, comment, label, inverseOf }
-const namedIndividuals = {}; // id -> { types, ... }
-const enumClasses = new Set(); // classes that are enum value types
+const classes: Record<string, VfClass> = {};
+const properties: Record<string, VfProperty> = {};
+const namedIndividuals: Record<string, NamedIndividual> = {};
+const enumClasses = new Set<string>(); // classes that are enum value types
 
 // Enum classes: these are used as ranges for Action effect properties
-const ENUM_CLASS_NAMES = new Set([
+const ENUM_CLASS_NAMES = new Set<string>([
   "InputOutput",
   "CreateResource",
   "EventQuantity",
@@ -135,7 +210,7 @@ const ENUM_CLASS_NAMES = new Set([
 ]);
 
 // Classes to skip (not mapped to records)
-const SKIP_CLASSES = new Set([
+const SKIP_CLASSES = new Set<string>([
   "Agent", // abstract, split into subtypes
   "Measure", // shared def object
   ...ENUM_CLASS_NAMES,
@@ -154,9 +229,9 @@ for (const node of graph) {
       classes[id] = {
         label: getLabel(node),
         comment: getComment(node),
-        status: node["vs:term_status"] || "stable",
+        status: (node["vs:term_status"] as string) || "stable",
         subClassOf: node["rdfs:subClassOf"]
-          ? stripVf(node["rdfs:subClassOf"]["@id"])
+          ? stripVf((node["rdfs:subClassOf"] as { "@id": string })["@id"])
           : null,
       };
     }
@@ -169,7 +244,7 @@ for (const node of graph) {
   ) {
     const domains = getDomainClasses(node);
     // Expand Agent domain to subtypes
-    const expandedDomains = [];
+    const expandedDomains: string[] = [];
     for (const d of domains) {
       if (d === "Agent") {
         expandedDomains.push("Person", "Organization", "EcologicalAgent");
@@ -178,12 +253,12 @@ for (const node of graph) {
       }
     }
 
-    const propType =
+    const propType: "object" | "datatype" =
       types.includes("owl:ObjectProperty") ? "object" : "datatype";
     const range = getRangeId(node);
     const maxCard = getMaxCard(node);
     const inverseOf = node["owl:inverseOf"]
-      ? stripVf(node["owl:inverseOf"]["@id"])
+      ? stripVf((node["owl:inverseOf"] as { "@id": string })["@id"])
       : null;
 
     properties[id] = {
@@ -194,7 +269,7 @@ for (const node of graph) {
       comment: getComment(node),
       label: getLabel(node),
       inverseOf,
-      status: node["vs:term_status"] || "stable",
+      status: (node["vs:term_status"] as string) || "stable",
     };
   }
 
@@ -203,7 +278,7 @@ for (const node of graph) {
       types: types.filter((t) => t !== "owl:NamedIndividual"),
       label: getLabel(node),
       comment: getComment(node),
-      status: node["vs:term_status"] || "stable",
+      status: (node["vs:term_status"] as string) || "stable",
       node,
     };
   }
@@ -211,34 +286,7 @@ for (const node of graph) {
 
 // ─── NSID mapping ───────────────────────────────────────────────────────────
 
-const CLASS_TO_NSID = {
-  ResourceSpecification: "vf.knowledge.resourceSpecification",
-  ProcessSpecification: "vf.knowledge.processSpecification",
-  Action: "vf.knowledge.action",
-  Recipe: "vf.knowledge.recipe",
-  RecipeProcess: "vf.knowledge.recipeProcess",
-  RecipeFlow: "vf.knowledge.recipeFlow",
-  RecipeExchange: "vf.knowledge.recipeExchange",
-  SpatialThing: "vf.knowledge.spatialThing",
-  Unit: "vf.knowledge.unit",
-  Plan: "vf.planning.plan",
-  Intent: "vf.planning.intent",
-  Proposal: "vf.planning.proposal",
-  ProposalList: "vf.planning.proposalList",
-  Commitment: "vf.planning.commitment",
-  Agreement: "vf.planning.agreement",
-  AgreementBundle: "vf.planning.agreementBundle",
-  Claim: "vf.planning.claim",
-  Process: "vf.planning.process",
-  Person: "vf.observation.person",
-  Organization: "vf.observation.organization",
-  EcologicalAgent: "vf.observation.ecologicalAgent",
-  EconomicResource: "vf.observation.economicResource",
-  EconomicEvent: "vf.observation.economicEvent",
-  BatchLotRecord: "vf.observation.batchLotRecord",
-};
-
-const NSID_TO_PATH = {};
+const NSID_TO_PATH: Record<string, string> = {};
 for (const [cls, nsid] of Object.entries(CLASS_TO_NSID)) {
   const parts = nsid.split(".");
   const dir = parts.slice(1, -1).join("/");
@@ -249,13 +297,13 @@ for (const [cls, nsid] of Object.entries(CLASS_TO_NSID)) {
 // ─── type mapping ───────────────────────────────────────────────────────────
 
 // VF classes that are referenced by AT-URI (records)
-const RECORD_CLASSES = new Set(Object.keys(CLASS_TO_NSID));
+const RECORD_CLASSES = new Set<string>(Object.keys(CLASS_TO_NSID));
 
 // Agent subtypes referenced by DID
-const AGENT_CLASSES = new Set(["Agent", "Person", "Organization", "EcologicalAgent"]);
+const AGENT_CLASSES = new Set<string>(["Agent", "Person", "Organization", "EcologicalAgent"]);
 
 // Classify properties referenced by Action
-const ACTION_EFFECT_PROPS = new Set([
+const ACTION_EFFECT_PROPS = new Set<string>([
   "inputOutput",
   "pairsWith",
   "createResource",
@@ -269,10 +317,10 @@ const ACTION_EFFECT_PROPS = new Set([
   "stateEffect",
 ]);
 
-function rangeToLexiconType(propName, range, propType, maxCard) {
+function rangeToLexiconType(propName: string, range: string | string[] | null, propType: "object" | "datatype", maxCard: number | null): LexiconTypeDef {
   // If range is an array (union), pick the first record class to determine format
-  const effectiveRange = Array.isArray(range) ? range[0] : range;
-  const isUnionRange = Array.isArray(range);
+  const effectiveRange: string | null = Array.isArray(range) ? range[0] : range;
+  const isUnionRange: boolean = Array.isArray(range);
 
   // ── Special-case properties ──
 
@@ -294,8 +342,8 @@ function rangeToLexiconType(propName, range, propType, maxCard) {
 
   // For union ranges pointing to records, determine if they're all VF records
   if (isUnionRange) {
-    const allRecords = range.every((r) => RECORD_CLASSES.has(r));
-    const allAgents = range.every((r) => AGENT_CLASSES.has(r));
+    const allRecords = (range as string[]).every((r) => RECORD_CLASSES.has(r));
+    const allAgents = (range as string[]).every((r) => AGENT_CLASSES.has(r));
     if (allAgents) {
       if (maxCard === 1) return { type: "string", format: "did" };
       return { type: "array", items: { type: "string", format: "did" } };
@@ -307,7 +355,7 @@ function rangeToLexiconType(propName, range, propType, maxCard) {
   }
 
   // Enum ranges for Action effect properties
-  if (ENUM_CLASS_NAMES.has(effectiveRange)) {
+  if (effectiveRange && ENUM_CLASS_NAMES.has(effectiveRange)) {
     return {
       type: "string",
       description: `One of the ${effectiveRange} enum values`,
@@ -326,13 +374,13 @@ function rangeToLexiconType(propName, range, propType, maxCard) {
   }
 
   // Agent references → DID format
-  if (AGENT_CLASSES.has(effectiveRange)) {
+  if (effectiveRange && AGENT_CLASSES.has(effectiveRange)) {
     if (maxCard === 1) return { type: "string", format: "did" };
     return { type: "array", items: { type: "string", format: "did" } };
   }
 
   // Record references → AT-URI
-  if (RECORD_CLASSES.has(effectiveRange)) {
+  if (effectiveRange && RECORD_CLASSES.has(effectiveRange)) {
     if (maxCard === 1) return { type: "string", format: "at-uri" };
     return { type: "array", items: { type: "string", format: "at-uri" } };
   }
@@ -359,8 +407,8 @@ function rangeToLexiconType(propName, range, propType, maxCard) {
   return { type: "string" };
 }
 
-function getEnumValues(enumClassName) {
-  const values = [];
+function getEnumValues(enumClassName: string): string[] {
+  const values: string[] = [];
   for (const [id, ni] of Object.entries(namedIndividuals)) {
     if (ni.types.includes(`vf:${enumClassName}`)) {
       values.push(id);
@@ -371,21 +419,22 @@ function getEnumValues(enumClassName) {
 
 // ─── build lexicon per class ────────────────────────────────────────────────
 
-function buildRecordLexicon(className) {
+function buildRecordLexicon(className: string): LexiconDocument | null {
   const nsid = CLASS_TO_NSID[className];
   if (!nsid) return null;
 
   const classInfo = classes[className];
   if (!classInfo && className !== "Unit") return null;
 
-  const info = classInfo || {
+  const info: VfClass = classInfo || {
     label: className,
     comment: "",
     status: "stable",
+    subClassOf: null,
   };
 
   // Gather all properties for this class
-  const classProps = {};
+  const classProps: Record<string, LexiconTypeDef> = {};
   for (const [propName, prop] of Object.entries(properties)) {
     if (!prop.domains.includes(className)) continue;
     // Skip Action effect properties on non-Action classes
@@ -397,7 +446,7 @@ function buildRecordLexicon(className) {
       prop.type,
       prop.maxCard
     );
-    const propDef = { ...lexType };
+    const propDef: LexiconTypeDef = { ...lexType };
     if (prop.comment) propDef.description = prop.comment;
     // String constraints
     if (propDef.type === "string" && !propDef.format && !propDef.knownValues && !propDef.ref) {
@@ -408,19 +457,17 @@ function buildRecordLexicon(className) {
   }
 
   // Build the required array (properties with owl:cardinality = 1)
-  const required = [];
+  const required: string[] = [];
   for (const [propName, prop] of Object.entries(properties)) {
     if (!prop.domains.includes(className)) continue;
     if (className !== "Action" && ACTION_EFFECT_PROPS.has(propName)) continue;
-    const card = prop.maxCard;
-    // Only cardinality: 1 (not maxCardinality) implies required
     const node = graph.find((n) => stripVf(n["@id"]) === propName);
     if (node && node["owl:cardinality"] === 1) {
       required.push(propName);
     }
   }
 
-  const recordDef = {
+  const recordDef: Record<string, any> = {
     type: "record",
     description: info.comment || `${info.label} record`,
     key: "tid",
@@ -445,15 +492,12 @@ function buildRecordLexicon(className) {
 
 // ─── special: Action record with named individuals ──────────────────────────
 
-function buildActionLexicon() {
+function buildActionLexicon(): LexiconDocument | null {
   const base = buildRecordLexicon("Action");
   if (!base) return null;
 
-  // Add label property (from owl:DataTypeProperty, domain Action)
-  // Already handled by property iteration
-
   // Collect action names as knownValues
-  const actionNames = [];
+  const actionNames: string[] = [];
   for (const [id, ni] of Object.entries(namedIndividuals)) {
     if (ni.types.includes("vf:Action")) {
       actionNames.push(id);
@@ -479,7 +523,7 @@ function buildActionLexicon() {
 
 // ─── special: shared defs (Measure) ─────────────────────────────────────────
 
-function buildDefsLexicon() {
+function buildDefsLexicon(): LexiconDocument {
   return {
     lexicon: 1,
     id: "vf.defs",
@@ -512,7 +556,7 @@ function buildDefsLexicon() {
 
 // ─── generate all ───────────────────────────────────────────────────────────
 
-const allLexicons = {};
+const allLexicons: Record<string, LexiconDocument | null> = {};
 
 // 1. Shared defs
 allLexicons["vf.defs"] = buildDefsLexicon();
@@ -537,7 +581,7 @@ if (AUDIT_MODE) {
 
 // ─── write files ────────────────────────────────────────────────────────────
 
-function writeLexicons() {
+function writeLexicons(): void {
   // Write defs
   const defsPath = join(ROOT, "lexicons", "vf", "defs.json");
   writeFileSync(defsPath, JSON.stringify(allLexicons["vf.defs"], null, 2) + "\n");
@@ -574,7 +618,7 @@ function loadOnDiskLexicons(): Record<string, any> {
   const lexiconDir = join(ROOT, "lexicons", "vf");
   const result: Record<string, any> = {};
 
-  function walk(dir: string) {
+  function walk(dir: string): void {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const fullPath = join(dir, entry.name);
       if (entry.isDirectory()) {
@@ -592,7 +636,7 @@ function loadOnDiskLexicons(): Record<string, any> {
   return result;
 }
 
-function expectedLexiconType(rangeType: string | null, owlType: string | string[]) {
+function expectedLexiconType(rangeType: string | null, owlType: string | string[]): { type: string; format?: string; ref?: string; note?: string; raw?: string | null } {
   if (rangeType === "xsd:string") return { type: "string" };
   if (rangeType === "xsd:boolean") return { type: "boolean" };
   if (rangeType === "xsd:dateTimeStamp") return { type: "string", format: "datetime" };
@@ -626,12 +670,12 @@ function expectedLexiconType(rangeType: string | null, owlType: string | string[
   return { type: "unknown", raw: rangeType };
 }
 
-function auditLexicons() {
+function auditLexicons(): void {
   const onDisk = loadOnDiskLexicons();
-  const allNsids = new Set(Object.keys(onDisk));
+  const allNsids = new Set<string>(Object.keys(onDisk));
 
   // Build expected properties per class from parsed ontology data
-  const expectedByClass: Record<string, Record<string, any>> = {};
+  const expectedByClass: Record<string, Record<string, VfProperty>> = {};
   for (const cls of Object.keys(CLASS_TO_NSID)) {
     expectedByClass[cls] = {};
   }
@@ -643,11 +687,11 @@ function auditLexicons() {
     }
   }
 
-  const report = {
-    classesNotMapped: [] as any[],
-    missingFromLexicon: [] as any[],
-    extraInLexicon: [] as any[],
-    typeMismatches: [] as any[],
+  const report: AuditReport = {
+    classesNotMapped: [],
+    missingFromLexicon: [],
+    extraInLexicon: [],
+    typeMismatches: [],
     summary: { total: 0, missing: 0, extra: 0, mismatched: 0 },
   };
 
@@ -661,7 +705,7 @@ function auditLexicons() {
   console.log("  1. CLASSES IN VF.JSON NOT MAPPED TO LEXICONS");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-  const nsidClassNames = new Set(Object.keys(CLASS_TO_NSID));
+  const nsidClassNames = new Set<string>(Object.keys(CLASS_TO_NSID));
   for (const cls of Object.keys(classes)) {
     if (!nsidClassNames.has(cls) && !SKIP_CLASSES.has(cls)) {
       report.classesNotMapped.push({
@@ -695,7 +739,7 @@ function auditLexicons() {
     const record = lexicon.defs?.main?.record;
     if (!record) continue;
 
-    const lexiconProps = record.properties || {};
+    const lexiconProps: Record<string, any> = record.properties || {};
     const expectedPropNames = Object.keys(expected);
     const lexiconPropNames = Object.keys(lexiconProps);
 
@@ -707,7 +751,7 @@ function auditLexicons() {
         report.missingFromLexicon.push({
           nsid,
           property: propName,
-          rangeType: Array.isArray(prop.range) ? prop.range.join(" | ") : prop.range,
+          rangeType: Array.isArray(prop.range) ? prop.range.join(" | ") : (prop.range || ""),
           owlType: prop.type,
           comment: prop.comment,
           status: prop.status,
@@ -736,7 +780,7 @@ function auditLexicons() {
       if (!lexiconProps[propName]) continue;
       const prop = expected[propName];
       const lexProp = lexiconProps[propName];
-      const rangeStr = Array.isArray(prop.range) ? prop.range[0] : prop.range;
+      const rangeStr: string = Array.isArray(prop.range) ? prop.range[0] : (prop.range || "");
       const expType = expectedLexiconType(rangeStr, prop.type);
       const issues: string[] = [];
 
@@ -744,15 +788,15 @@ function auditLexicons() {
         if (lexProp.type === "array") {
           // Arrays are acceptable for multi-valued properties
         } else if (expType.type === "ref" && lexProp.type === "ref") {
-          if ((expType as any).ref && lexProp.ref !== (expType as any).ref) {
-            issues.push(`ref mismatch: expected ${(expType as any).ref}, got ${lexProp.ref}`);
+          if (expType.ref && lexProp.ref !== expType.ref) {
+            issues.push(`ref mismatch: expected ${expType.ref}, got ${lexProp.ref}`);
           }
         } else if (expType.type === "string" && lexProp.type === "string") {
-          if ((expType as any).format && lexProp.format !== (expType as any).format) {
-            issues.push(`format mismatch: expected ${(expType as any).format}, got ${lexProp.format || "none"}`);
+          if (expType.format && lexProp.format !== expType.format) {
+            issues.push(`format mismatch: expected ${expType.format}, got ${lexProp.format || "none"}`);
           }
         } else if (expType.type !== lexProp.type && lexProp.type !== "array") {
-          if (!(expType as any).note) {
+          if (!expType.note) {
             issues.push(`type mismatch: expected ${expType.type}, got ${lexProp.type}`);
           }
         }
@@ -780,7 +824,7 @@ function auditLexicons() {
   if (report.missingFromLexicon.length === 0) {
     console.log("  ✓ No missing properties");
   } else {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, typeof report.missingFromLexicon> = {};
     for (const item of report.missingFromLexicon) {
       if (!grouped[item.nsid]) grouped[item.nsid] = [];
       grouped[item.nsid].push(item);
@@ -803,7 +847,7 @@ function auditLexicons() {
   if (report.extraInLexicon.length === 0) {
     console.log("  ✓ No extra properties");
   } else {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, typeof report.extraInLexicon> = {};
     for (const item of report.extraInLexicon) {
       if (!grouped[item.nsid]) grouped[item.nsid] = [];
       grouped[item.nsid].push(item);
@@ -841,14 +885,14 @@ function auditLexicons() {
   console.log("  5. ACTION NAMED INDIVIDUALS");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-  const vfActionIds = Object.entries(namedIndividuals)
+  const vfActionIds: string[] = Object.entries(namedIndividuals)
     .filter(([, ni]) => ni.types.includes("vf:Action"))
     .map(([id]) => id);
-  const vfActionLabels = vfActionIds.map((id) => namedIndividuals[id].label || id);
+  const vfActionLabels: string[] = vfActionIds.map((id) => namedIndividuals[id].label || id);
 
   const actionLexicon = onDisk["vf.knowledge.action"];
-  const actionProps = actionLexicon?.defs?.main?.record?.properties || {};
-  const actionKnownValues = actionProps.actionId?.knownValues || [];
+  const actionProps: Record<string, any> = actionLexicon?.defs?.main?.record?.properties || {};
+  const actionKnownValues: string[] = actionProps.actionId?.knownValues || [];
 
   console.log(`  VF actions (${vfActionIds.length}): ${vfActionLabels.join(", ")}`);
   console.log(`  Lexicon actionId knownValues (${actionKnownValues.length}): ${actionKnownValues.join(", ")}`);
@@ -867,8 +911,8 @@ function auditLexicons() {
   console.log(`\n  Action properties in vf.json named individuals: ${[...actionNamedProps].join(", ")}`);
   console.log(`  Action properties in lexicon: ${Object.keys(actionProps).join(", ")}`);
 
-  const missingActionProps = [...actionNamedProps].filter((p) => !actionProps[p]);
-  const extraActionProps = Object.keys(actionProps).filter((p) => !actionNamedProps.has(p) && p !== "actionId");
+  const missingActionProps: string[] = [...actionNamedProps].filter((p) => !actionProps[p]);
+  const extraActionProps: string[] = Object.keys(actionProps).filter((p) => !actionNamedProps.has(p) && p !== "actionId");
   if (missingActionProps.length > 0) {
     console.log(`  ✗ Missing from action lexicon: ${missingActionProps.join(", ")}`);
   }
@@ -884,13 +928,13 @@ function auditLexicons() {
 
   const defsLexicon = onDisk["vf.defs"];
   const measureDef = defsLexicon?.defs?.measure;
-  const measureExpectedProps = ["hasNumericalValue", "hasDenominator", "hasUnit"];
+  const measureExpectedProps: string[] = ["hasNumericalValue", "hasDenominator", "hasUnit"];
 
   if (measureDef) {
-    const measureProps = Object.keys(measureDef.properties || {});
+    const measureProps: string[] = Object.keys(measureDef.properties || {});
     console.log(`  Defined properties: ${measureProps.join(", ")}`);
     console.log(`  Expected: ${measureExpectedProps.join(", ")}`);
-    const missingMeasure = measureExpectedProps.filter((p) => !measureDef.properties[p]);
+    const missingMeasure: string[] = measureExpectedProps.filter((p) => !measureDef.properties[p]);
     if (missingMeasure.length > 0) {
       console.log(`  ✗ Missing: ${missingMeasure.join(", ")}`);
     } else {
@@ -909,7 +953,7 @@ function auditLexicons() {
   let brokenRefs = 0;
   for (const [nsid, lex] of Object.entries(onDisk)) {
     // Check main record properties
-    const props = lex.defs?.main?.record?.properties || {};
+    const props: Record<string, any> = lex.defs?.main?.record?.properties || {};
     for (const [propName, propDef] of Object.entries(props) as [string, any][]) {
       if (propDef.ref) {
         const [refNsid] = propDef.ref.split("#");
@@ -929,7 +973,7 @@ function auditLexicons() {
     // Check non-main defs
     for (const [defName, def] of Object.entries(lex.defs || {}) as [string, any][]) {
       if (defName === "main") continue;
-      const defProps = def.properties || {};
+      const defProps: Record<string, any> = def.properties || {};
       for (const [propName, propDef] of Object.entries(defProps) as [string, any][]) {
         if (propDef.ref) {
           const [refNsid] = propDef.ref.split("#");

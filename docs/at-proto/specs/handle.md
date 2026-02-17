@@ -25,8 +25,6 @@ A reference regular expression (regex) for the handle syntax is:
 
 /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/
 
-Copy
-Copied!
 Additional Non-Syntax Restrictions
 "Reserved" top-level domains should not fail syntax validation (eg, in atproto Lexicon validation), but they must immediately fail any attempt at registration, resolution, etc. See also: https://en.wikipedia.org/wiki/Top-level_domain#Reserved_domains
 
@@ -61,8 +59,6 @@ xn--fiqa61au8b7zsevnm8ak20mc4a87e.xn--fiqs8s
 xn--ls8h.test
 example.t // not a real TLD, but syntax ok
 
-Copy
-Copied!
 Invalid syntax:
 
 jo@hn.test
@@ -75,16 +71,12 @@ www.masełkowski.pl.com
 org
 name.org.
 
-Copy
-Copied!
 Valid syntax, but must always fail resolution due to other restrictions:
 
 2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion
 laptop.local
 blah.arpa
 
-Copy
-Copied!
 Handle Resolution
 Handles have a limited role in atproto, and need to be resolved to a DID in almost all situations. Resolution mechanisms must demonstrate a reasonable degree of authority over the domain name at a point in time, and need to be relatively efficient to look up. There are currently two supported resolution mechanisms, one using a TXT DNS record containing the DID, and another over HTTPS at a special /.well-known/ URL.
 
@@ -117,8 +109,6 @@ Date: Wed, 14 Jun 2023 00:47:21 GMT
 
 did:plc:z72i7hdynmk6r22z27h6tvur
 
-Copy
-Copied!
 The response Content-Type header does not need to be strictly verified.
 
 The web server's response body should not contain any prefix or suffix whitespace, but clients should strip small amounts of prefix or suffix whitespace from the response body before attempting to parse as a DID.

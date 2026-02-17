@@ -6,10 +6,10 @@ const org = process.env.GITHUB_ORG
 const repo = process.env.GITHUB_REPO
 const branch = 'main' // adjust if needed
 
-
 export default defineConfig({
   title: 'Value Flows',
   description: 'Documentation',
+  base: `/${repo}/`,
 
   themeConfig: {
     nav: [

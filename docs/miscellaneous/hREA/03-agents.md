@@ -23,20 +23,21 @@ pub struct ReaAgent {
 
 ### Fields Explained
 
-| Field | Type | Description | Example |
-|-------|------|-------------|---------|
-| `id` | `Option<ActionHash>` | Unique Holochain action hash identifier | `uhCAk...` |
-| `name` | `String` | Human-readable display name | "Acme Corporation" |
-| `agent_type` | `String` | Primary type classification | "Organization" |
-| `image` | `Option<String>` | URL or reference to profile image | "https://example.com/logo.png" |
-| `classified_as` | `Option<Vec<String>>` | Multiple classification tags | `["manufacturer", "certified"]` |
-| `note` | `Option<String>`` | Free-form descriptive text | "Leading sustainable manufacturer" |
+| Field           | Type                  | Description                             | Example                            |
+| --------------- | --------------------- | --------------------------------------- | ---------------------------------- |
+| `id`            | `Option<ActionHash>`  | Unique Holochain action hash identifier | `uhCAk...`                         |
+| `name`          | `String`              | Human-readable display name             | "Acme Corporation"                 |
+| `agent_type`    | `String`              | Primary type classification             | "Organization"                     |
+| `image`         | `Option<String>`      | URL or reference to profile image       | "https://example.com/logo.png"     |
+| `classified_as` | `Option<Vec<String>>` | Multiple classification tags            | `["manufacturer", "certified"]`    |
+| `note`          | `Option<String>`      | Free-form descriptive text              | "Leading sustainable manufacturer" |
 
 ## Agent Types
 
 ### Standard Agent Classifications
 
 #### 1. Individual Persons
+
 ```json
 {
   "name": "Alice Johnson",
@@ -47,6 +48,7 @@ pub struct ReaAgent {
 ```
 
 #### 2. Organizations
+
 ```json
 {
   "name": "Green Foods Co-op",
@@ -57,6 +59,7 @@ pub struct ReaAgent {
 ```
 
 #### 3. Groups and Teams
+
 ```json
 {
   "name": "Production Team Alpha",
@@ -67,6 +70,7 @@ pub struct ReaAgent {
 ```
 
 #### 4. Network Entities
+
 ```json
 {
   "name": "Regional Supply Network",
@@ -81,15 +85,18 @@ pub struct ReaAgent {
 hREA supports flexible agent classification systems:
 
 #### Role-Based Classifications
+
 - `["producer", "consumer", "intermediary"]`
 - `["supplier", "manufacturer", "distributor", "retailer"]`
 - `["worker", "manager", "owner", "investor"]`
 
 #### Economic Model Classifications
+
 - `["for-profit", "non-profit", "cooperative", "mutual"]`
 - `["gift-economy", "commons", "market"]`
 
 #### Capability Classifications
+
 - `["certified-organic", "fair-trade", "b-corp"]`
 - `["skill-holder", "knowledge-provider", "service-provider"]`
 
@@ -100,6 +107,7 @@ hREA supports flexible agent classification systems:
 hREA supports several types of relationships between agents:
 
 #### Membership Relationships
+
 ```graphql
 # Link group members to organizations
 mutation {
@@ -112,6 +120,7 @@ mutation {
 ```
 
 #### Role Relationships
+
 ```graphql
 # Define roles within organizations
 mutation {
@@ -124,6 +133,7 @@ mutation {
 ```
 
 #### Collaboration Relationships
+
 ```graphql
 # Create collaboration networks
 mutation {
@@ -141,13 +151,15 @@ mutation {
 
 ```graphql
 mutation CreateAgent {
-  createReaAgent(agent: {
-    name: "New Sustainable Farm"
-    agentType: "Organization"
-    classifiedAs: ["organic-farm", "local-producer"]
-    note: "Family farm practicing sustainable agriculture"
-    image: "https://example.com/farm-logo.png"
-  }) {
+  createReaAgent(
+    agent: {
+      name: "New Sustainable Farm"
+      agentType: "Organization"
+      classifiedAs: ["organic-farm", "local-producer"]
+      note: "Family farm practicing sustainable agriculture"
+      image: "https://example.com/farm-logo.png"
+    }
+  ) {
     reaAgent {
       id
       name
@@ -200,10 +212,7 @@ query GetAgent {
 ```graphql
 query SearchAgents {
   reaAgents(
-    filters: {
-      agentType: "Organization"
-      classifiedAs: ["organic-farm"]
-    }
+    filters: { agentType: "Organization", classifiedAs: ["organic-farm"] }
   ) {
     edges {
       node {

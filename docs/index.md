@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: My Project
+  name: Value Flows
   text: Clean, fast documentation
   tagline: Built with Bun + VitePress
   actions:

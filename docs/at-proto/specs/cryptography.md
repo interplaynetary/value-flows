@@ -42,15 +42,11 @@ A P-256 public key, encoded in multibase (with multicodec), and as did:key:
 zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo
 did:key:zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo
 
-Copy
-Copied!
 A K-256 public key, encoded in multibase (with multicodec), and as did:key:
 
 zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc
 did:key:zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc
 
-Copy
-Copied!
 Usage and Implementation Guidelines
 There is no specific recommended byte or string encoding for private keys across the atproto ecosystem. Sometimes simple hex encoding is used, sometimes multibase with or without multicodec type information.
 

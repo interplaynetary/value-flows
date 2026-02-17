@@ -18,16 +18,12 @@ The full, general structure of an AT URI is:
 
 "at://" AUTHORITY [ PATH ] [ "?" QUERY ] [ "#" FRAGMENT ]
 
-Copy
-Copied!
 The authority part of the URI can be either a handle or a DID, indicating the identity associated with the repository. Note that a handle can refer to different DIDs (and thus different repositories) over time. See discussion below about strong references, and in "Usage and Implementation".
 
 In current atproto Lexicon use, the query and fragment parts are not yet supported, and only a fixed pattern of paths are allowed:
 
 "at://" AUTHORITY [ "/" COLLECTION [ "/" RKEY ] ]
 
-Copy
-Copied!
 The authority section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional collection part of the path must be a normalized NSID. The optional rkey part of the path must be a valid Record Key.
 
 An AT URI pointing to a specific record in a repository is not a strong reference, in that it is not content-addressed. The record may change or be removed over time, or the DID itself may be deleted or unavailable. For did:web, control of the DID (and thus repository) may change over time. For AT URIs with a handle in the authority section, the handle-to-DID mapping can also change.
@@ -70,8 +66,6 @@ AUTHORITY = HANDLE | DID
 COLLECTION = NSID
 RKEY = RECORD-KEY
 
-Copy
-Copied!
 Normalization
 Particularly when included in atproto records, strict normalization should be followed to ensure that the representation is reproducible and can be used with simple string equality checks.
 
@@ -92,23 +86,17 @@ Valid AT URIs (both general and Lexicon syntax):
 
 at://foo.com/com.example.foo/123
 
-Copy
-Copied!
 Valid general AT URI syntax, invalid in current Lexicon:
 
 at://foo.com/example/123 // invalid NSID
 at://computer // not a valid DID or handle
 at://example.com:3000 // not a valid DID or handle
 
-Copy
-Copied!
 Invalid AT URI (in both contexts)
 
 at://foo.com/ // trailing slash
 at://user:pass@foo.com // userinfo not currently supported
 
-Copy
-Copied!
 Usage and Implementation Guidelines
 Generic URI and URL parsing libraries can sometimes be used with AT URIs, but not always. A key requirement is the ability to work with the authority (or origin) part of the URI as a simple string, without being parsed in to userinfo, host, and port sub-parts. Specifically: the Python 3 urllib module (from the standard library) works; the Javascript url-parse package works; the Golang net/url package does not work; and most of the popular Rust URL parsing crates do not work.
 
@@ -123,4 +111,4 @@ Do not confuse the JSON Path fragment syntax with the Lexicon reference syntax. 
 Possible Future Changes
 The maximum length constraint may change.
 
-Relative references may be supported in Lexicons in at-uri fields. For example, one record referencing other records in the same repository could use ../<collection>/<rkey> relative path syntax.
+Relative references may be supported in Lexicons in at-uri fields. For example, one record referencing other records in the same repository could use `../<collection>/<rkey>` relative path syntax.

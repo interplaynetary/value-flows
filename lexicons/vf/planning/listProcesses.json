@@ -1,0 +1,95 @@
+{
+  "lexicon": 1,
+  "id": "vf.planning.listProcesses",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List processes. Filterable by: hasInput, hasOutput, plannedWithin, inScopeOf, finished, basedOn.",
+      "parameters": {
+        "type": "params",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Fetch a single record by AT-URI. Other filters are ignored when set."
+          },
+          "hasInput": {
+            "type": "string",
+            "description": "Filter where hasInput array contains this AT-URI.",
+            "format": "at-uri"
+          },
+          "hasOutput": {
+            "type": "string",
+            "description": "Filter where hasOutput array contains this AT-URI.",
+            "format": "at-uri"
+          },
+          "plannedWithin": {
+            "type": "string",
+            "description": "Filter by plannedWithin (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "inScopeOf": {
+            "type": "string",
+            "description": "Filter by inScopeOf (DID of referenced agent).",
+            "format": "did"
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "Filter by finished."
+          },
+          "basedOn": {
+            "type": "string",
+            "description": "Filter by basedOn (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50,
+            "description": "Maximum number of records to return."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor from a previous response."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "records"
+          ],
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "uri"
+                ],
+                "properties": {
+                  "uri": {
+                    "type": "string",
+                    "format": "at-uri",
+                    "description": "AT-URI of the record."
+                  },
+                  "value": {
+                    "type": "unknown",
+                    "description": "The full record value."
+                  }
+                }
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor for next page."
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -141,7 +141,7 @@ Type-specific fields:
 
 minLength (integer, optional): minimum size of value, as raw bytes with no encoding
 maxLength (integer, optional): maximum size of value, as raw bytes with no encoding
-In the JSON format, these fields are encoded as {"$bytes":<base64-string>}. In the CBOR format, these fields use the native bytes type.
+In the JSON format, these fields are encoded as {"$bytes":`<base64-string>`}. In the CBOR format, these fields use the native bytes type.
 
 cid-link
 No type-specific fields.
@@ -313,8 +313,6 @@ Valid examples:
 1985-04-12T23:20:50.123+00:00
 1985-04-12T23:20:50.123-07:00
 
-Copy
-Copied!
 Invalid examples:
 
 1985-04-12
@@ -352,8 +350,6 @@ Invalid examples:
 
 0000-01-01T00:00:00+01:00
 
-Copy
-Copied!
 uri
 Flexible to any URI schema, following the generic RFC-3986 on URIs. This includes, but isn’t limited to: did, https, wss, ipfs (for CIDs), dns, and of course at. Maximum length in Lexicons is 8 KBytes.
 

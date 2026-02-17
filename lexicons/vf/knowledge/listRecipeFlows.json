@@ -1,0 +1,101 @@
+{
+  "lexicon": 1,
+  "id": "vf.knowledge.listRecipeFlows",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List recipeFlows. Filterable by: action, recipeInputOf, recipeOutputOf, recipeClauseOf, recipeReciprocalClauseOf, resourceConformsTo, stage.",
+      "parameters": {
+        "type": "params",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Fetch a single record by AT-URI. Other filters are ignored when set."
+          },
+          "action": {
+            "type": "string",
+            "description": "Filter by action (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "recipeInputOf": {
+            "type": "string",
+            "description": "Filter by recipeInputOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "recipeOutputOf": {
+            "type": "string",
+            "description": "Filter by recipeOutputOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "recipeClauseOf": {
+            "type": "string",
+            "description": "Filter by recipeClauseOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "recipeReciprocalClauseOf": {
+            "type": "string",
+            "description": "Filter by recipeReciprocalClauseOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "resourceConformsTo": {
+            "type": "string",
+            "description": "Filter by resourceConformsTo (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "stage": {
+            "type": "string",
+            "description": "Filter by stage (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50,
+            "description": "Maximum number of records to return."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor from a previous response."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "records"
+          ],
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "uri"
+                ],
+                "properties": {
+                  "uri": {
+                    "type": "string",
+                    "format": "at-uri",
+                    "description": "AT-URI of the record."
+                  },
+                  "value": {
+                    "type": "unknown",
+                    "description": "The full record value."
+                  }
+                }
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor for next page."
+            }
+          }
+        }
+      }
+    }
+  }
+}

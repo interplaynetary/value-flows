@@ -11,6 +11,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@frogcat/ttl2jsonld": "^0.0.10",
     "crypto": "^1.0.1",
     "jose": "^6.1.3"
   },

@@ -15,7 +15,7 @@ An early motivation for the TID scheme was to provide a loose temporal ordering 
 Record Key Type: nsid
 For cases where the record key must be a valid NSID.
 
-Record Key Type: literal:<value>
+Record Key Type: literal:`<value>`
 This key type is used when there should be only a single record in the collection, with a fixed, well-known Record Key.
 
 The most common value is self, specified as literal:self in a Lexicon schema.
@@ -30,7 +30,7 @@ Lexicon string type: record-key
 
 Regardless of the type, Record Keys must fulfill some baseline syntax constraints:
 
-restricted to a subset of ASCII characters — the allowed characters are alphanumeric (A-Za-z0-9), period, dash, underscore, colon, or tilde (.-_:~)
+restricted to a subset of ASCII characters — the allowed characters are alphanumeric (A-Za-z0-9), period, dash, underscore, colon, or tilde (.-\_:~)
 must have at least 1 and at most 512 characters
 the specific record key values . and .. are not allowed
 must be a permissible part of repository MST path string (the above constraints satisfy this condition)
@@ -43,13 +43,11 @@ Valid Record Keys:
 3jui7kd54zh2y
 self
 example.com
-~1.2-3_
+~1.2-3*
 dHJ1ZQ
 pre:fix
-_
+*
 
-Copy
-Copied!
 Invalid Record Keys:
 
 alpha/beta
@@ -64,8 +62,6 @@ number(3)
 "quote"
 dHJ1ZQ==
 
-Copy
-Copied!
 Usage and Implementation Guidelines
 Implementations should not rely on global uniqueness of TIDs, and should not trust TID timestamps as actual record creation timestamps. Record Keys are "user-controlled data" and may be arbitrarily selected by hostile accounts.
 

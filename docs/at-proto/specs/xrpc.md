@@ -58,8 +58,6 @@ As an example, if the admin token was secret-token, the header would look like:
 
 Authorization: Basic YWRtaW46c2VjcmV0LXRva2Vu
 
-Copy
-Copied!
 The set of endpoints requiring admin auth is likely to get out of date in this specification, but currently includes:
 
 com.atproto.admin.\*
@@ -96,8 +94,6 @@ const headerPayload = utf8ToBase64Url(jsonStringify(header)) + '.' + utf8ToBase6
 const signature = hashAndSign(accountSigningKey, utf8Bytes(headerPayload))
 const jwt = headerPayload + '.' + bytesToBase64Url(signature)
 
-Copy
-Copied!
 Service Proxying
 The PDS acts as a generic proxy between clients and other atproto services. Clients can use an HTTP header to specify which service in the network they want the request forwarded to (eg, a specific AppView or Labeler service). The PDS will do some safety checks, then forward the request on with an inter-service authentication token (JWT, described above) issued and signed by the user's identity.
 
@@ -107,8 +103,6 @@ An example request header, to proxy to a labeling service, is:
 
 atproto-proxy: did:web:labeler.example.com#atproto_labeler
 
-Copy
-Copied!
 A few requirements must be met for proxying to happen. These conditions may be extended in the future to address network abuse concerns.
 
 the target service must have a resolvable DID, a well-formed DID document, and a corresponding service entry with a matching identifier
