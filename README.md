@@ -1,10 +1,19 @@
-# Value Flows on AT Protocol
+# Economic Networks on AT protocols
 
-A bridge connecting the Value Flows economic network vocabulary to the AT Protocol ecosystem.
+`Xorganizing` > expressing and experimenting with organization
+
+This repo is a platform for building, experimenting with, and deploying decentralized economic/organizational structures on the AT Protocol.
 
 ## Overview
 
-Value Flows provides a vocabulary for describing economic flows of value across networks. This project ports the existing GraphQL schemas to AT Protocol lexicons, enabling Value Flows data to live within the decentralized AT Protocol ecosystem.
+This repository `xorganizing` is an experimental playground for organizational/economic architectures. It leverages the AT Protocol's decentralized, portable data model to express complex economic and social relationships.
+
+The repository hosts several core vocabularies and experiments:
+
+- **ValueFlows**: Economic network vocabulary for describing resource flows.
+- **Playnet**: Economic network vocabulary for matching/allocation.
+- **NGSI-LD**: Bridging IoT and context information models to AT Protocol.
+- **...and more**: Designed for extensibility and rapid prototyping of new organizational "languages".
 
 ## Why AT Protocol?
 
@@ -14,14 +23,6 @@ AT Protocol offers several key advantages for decentralized economic networks:
 - **Horizontal scalability** - Designed to scale across many servers
 - **User data portability** - Users own and can move their data
 - **Censorship resistance** - Content can't be easily removed by intermediaries
-
-## Current Status
-
-We've completed the initial translation of Value Flows TTL schemas to AT Protocol lexicons. The next phase involves:
-
-1. **Deploying an App View** - Indexes and aggregates Value Flows data on AT Protocol
-2. **Serving a GraphQL API adapter to XRPC** - Provides client access to the indexed data
-3. **Automating schema-to-network deployment** - Leveraging community tooling for rapid iteration
 
 ## Leveraging Community Tools
 
@@ -33,8 +34,23 @@ The AT Protocol community is developing tools that make this integration particu
   - Enable custom VF extensions simply by forking and extending schemas
   - Auto-generate XRPC endpoints from uploaded schemas
 
-- **GraphQL API Adapter** - Generate GraphQL API from XRPC endpoints
-- Perhaps by directly contributing to the HappyView repository.
+## Automated Collaborative Workflows
+
+This repository is built for collaboration and automation. We've developed a suite of workflows in [`/scripts`](/scripts) to streamline the lifecycle of AT Protocol development:
+
+- **Lexicon Auto-generation**: Tools like `json-ld-lex-gen.ts` and `lex-query-lex-gen.ts` automatically generate AT Protocol lexicons from higher-level definitions (like JSON-LD or GraphQL).
+- **Automated Deployment**: [`upload-lexicons.ts`](/scripts/upload-lexicons.ts) handles the process of pushing schemas to the network.
+- **Intelligent Documentation**: Docs are treated as data. The pipeline automatically generates documentation in [`/docs`](/docs) from the resulting lexicons in [`/lexicons`](/lexicons).
+- **Query & Index Generation**: Automated generation of xRPC queries and database indexes to power app views.
+
+## Project Structure
+
+- **[`/lexicons`](/lexicons)**: The source of truth for the network's data model (ValueFlows, Playnet, etc.).
+- **[`/specs`](/specs)**: Original specifications and bridge definitions (e.g., NGSI-LD, ValueFlows).
+- **[`/scripts`](/scripts)**: The automation engine for generation, deployment, and indexing.
+- **[`/docs`](/docs)**: Auto-generated and curated documentation.
+  - **[`docs/at-proto/specs`](/docs/at-proto/specs)**: Detailed AT Protocol technical specifications.
+- **[`/tests`](/tests)**: Verification suites for lexicons and xRPC integrations.
 
 ## Infrastructure Strategy
 
@@ -62,17 +78,9 @@ We can also define Kubernetes deployment with Guix for reproducible infrastructu
 
 ## Getting Involved
 
-This is a high-priority project, and I'm eager to move quickly. If you're interested in:
+We are moving fast and experiment openly. If you are interested in protocol design, decentralized economics, or the future of digital organization, join us.
 
-- Protocol design
-- Decentralized systems
-- Economic network vocabularies
-- Kubernetes/DevOps
-- P2P architectures
-
-Let's connect. I'm available for calls to discuss architecture, contributions, or collaboration.
-
-My contact: https://bsky.app/profile/ruzgarimski.bsky.social
+**Contact**: [ruzgarimski.bsky.social](https://bsky.app/profile/ruzgarimski.bsky.social)
 
 ## Quick Start
 
@@ -80,22 +88,26 @@ My contact: https://bsky.app/profile/ruzgarimski.bsky.social
 # Clone the repository
 git clone https://github.com/interplaynetary/value-flows.git
 
-# Explore the lexicons
-cd value-flows/lexicons
-# (Lexicon definitions here)
+# Explore the automation scripts
+ls scripts/
+
+# View the auto-generated docs
+https://interplaynetary.github.io/protocols
 ```
 
 ## Current Tasks
 
-- [ ] Translate TTL -> JSON-LD schemas to AT Protocol lexicons
-- [ ] Deploy initial app view (HappyView)
+- [x] Translate TTL -> JSON-LD schemas to AT Protocol lexicons
+- [x] Deploy initial app view (HappyView)
 - [ ] Implement GraphQL API layer (perhaps in (HappyView))
 - [ ] Deploy App-views to Kubernetes cluster
-- [ ] Document extension patterns for custom VF schemas
+- [/] Document extension patterns for custom schemas
 
 ---
 
-## Auto-Generate & Deploy Docs to Github Pages
+## Auto-Generate & Deploy Docs to GitHub Pages
+
+Documentation is automatically managed via GitHub Actions.
 
 - Enable GitHub Pages (One-Time)
 - In your repo:
