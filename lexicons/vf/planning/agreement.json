@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.agreement.agreement",
+  "id": "vf.planning.agreement",
   "defs": {
     "main": {
       "type": "record",

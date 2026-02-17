@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.recipe.recipeProcess",
+  "id": "vf.knowledge.recipeProcess",
   "defs": {
     "main": {
       "type": "record",

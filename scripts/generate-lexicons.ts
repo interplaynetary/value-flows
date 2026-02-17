@@ -17,11 +17,13 @@
  * - ExternalLink not a VF record type — skip it from domain lists
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
 
+const AUDIT_MODE = Bun.argv.includes("--audit");
+
 const ROOT = join(import.meta.dir, "..");
-const vfJson = JSON.parse(readFileSync(join(ROOT, "vf.json"), "utf-8"));
+const vfJson = JSON.parse(readFileSync(join(ROOT, "specs/vf.json"), "utf-8"));
 const graph = vfJson["@graph"];
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -213,27 +215,27 @@ const CLASS_TO_NSID = {
   ResourceSpecification: "vf.knowledge.resourceSpecification",
   ProcessSpecification: "vf.knowledge.processSpecification",
   Action: "vf.knowledge.action",
+  Recipe: "vf.knowledge.recipe",
+  RecipeProcess: "vf.knowledge.recipeProcess",
+  RecipeFlow: "vf.knowledge.recipeFlow",
+  RecipeExchange: "vf.knowledge.recipeExchange",
+  SpatialThing: "vf.knowledge.spatialThing",
   Unit: "vf.knowledge.unit",
-  Recipe: "vf.recipe.recipe",
-  RecipeProcess: "vf.recipe.recipeProcess",
-  RecipeFlow: "vf.recipe.recipeFlow",
-  RecipeExchange: "vf.recipe.recipeExchange",
   Plan: "vf.planning.plan",
   Intent: "vf.planning.intent",
-  Proposal: "vf.proposal.proposal",
-  ProposalList: "vf.proposal.proposalList",
+  Proposal: "vf.planning.proposal",
+  ProposalList: "vf.planning.proposalList",
   Commitment: "vf.planning.commitment",
-  Agreement: "vf.agreement.agreement",
-  AgreementBundle: "vf.agreement.agreementBundle",
+  Agreement: "vf.planning.agreement",
+  AgreementBundle: "vf.planning.agreementBundle",
   Claim: "vf.planning.claim",
   Process: "vf.planning.process",
-  Person: "vf.agent.person",
-  Organization: "vf.agent.organization",
-  EcologicalAgent: "vf.agent.ecologicalAgent",
+  Person: "vf.observation.person",
+  Organization: "vf.observation.organization",
+  EcologicalAgent: "vf.observation.ecologicalAgent",
   EconomicResource: "vf.observation.economicResource",
   EconomicEvent: "vf.observation.economicEvent",
-  SpatialThing: "vf.geo.spatialThing",
-  BatchLotRecord: "vf.resource.batchLotRecord",
+  BatchLotRecord: "vf.observation.batchLotRecord",
 };
 
 const NSID_TO_PATH = {};
@@ -525,35 +527,434 @@ for (const className of Object.keys(CLASS_TO_NSID)) {
   }
 }
 
-// ─── write files ────────────────────────────────────────────────────────────
+// ─── mode dispatch ──────────────────────────────────────────────────────────
 
-// Write defs
-const defsPath = join(ROOT, "lexicons", "vf", "defs.json");
-writeFileSync(defsPath, JSON.stringify(allLexicons["vf.defs"], null, 2) + "\n");
-console.log(`✓ ${defsPath}`);
-
-for (const [nsid, lexicon] of Object.entries(allLexicons)) {
-  if (nsid === "vf.defs") continue;
-  if (!lexicon) {
-    console.log(`✗ ${nsid} — failed to generate`);
-    continue;
-  }
-  const relPath = NSID_TO_PATH[nsid];
-  const fullPath = join(ROOT, relPath);
-  mkdirSync(dirname(fullPath), { recursive: true });
-  writeFileSync(fullPath, JSON.stringify(lexicon, null, 2) + "\n");
-  console.log(`✓ ${fullPath}`);
+if (AUDIT_MODE) {
+  auditLexicons();
+} else {
+  writeLexicons();
 }
 
-// ─── summary ────────────────────────────────────────────────────────────────
+// ─── write files ────────────────────────────────────────────────────────────
 
-console.log("\n=== Summary ===");
-const fileCount = Object.keys(allLexicons).length;
-console.log(`Generated ${fileCount} lexicon files`);
+function writeLexicons() {
+  // Write defs
+  const defsPath = join(ROOT, "lexicons", "vf", "defs.json");
+  writeFileSync(defsPath, JSON.stringify(allLexicons["vf.defs"], null, 2) + "\n");
+  console.log(`✓ ${defsPath}`);
 
-// Count properties per record
-for (const [nsid, lex] of Object.entries(allLexicons)) {
-  if (!lex?.defs?.main?.record?.properties) continue;
-  const propCount = Object.keys(lex.defs.main.record.properties).length;
-  console.log(`  ${nsid}: ${propCount} properties`);
+  for (const [nsid, lexicon] of Object.entries(allLexicons)) {
+    if (nsid === "vf.defs") continue;
+    if (!lexicon) {
+      console.log(`✗ ${nsid} — failed to generate`);
+      continue;
+    }
+    const relPath = NSID_TO_PATH[nsid];
+    const fullPath = join(ROOT, relPath);
+    mkdirSync(dirname(fullPath), { recursive: true });
+    writeFileSync(fullPath, JSON.stringify(lexicon, null, 2) + "\n");
+    console.log(`✓ ${fullPath}`);
+  }
+
+  // Summary
+  console.log("\n=== Summary ===");
+  const fileCount = Object.keys(allLexicons).length;
+  console.log(`Generated ${fileCount} lexicon files`);
+
+  for (const [nsid, lex] of Object.entries(allLexicons)) {
+    if (!lex?.defs?.main?.record?.properties) continue;
+    const propCount = Object.keys(lex.defs.main.record.properties).length;
+    console.log(`  ${nsid}: ${propCount} properties`);
+  }
+}
+
+// ─── audit mode ─────────────────────────────────────────────────────────────
+
+function loadOnDiskLexicons(): Record<string, any> {
+  const lexiconDir = join(ROOT, "lexicons", "vf");
+  const result: Record<string, any> = {};
+
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.name.endsWith(".json")) {
+        const data = JSON.parse(readFileSync(fullPath, "utf-8"));
+        if (data.id) {
+          result[data.id] = data;
+        }
+      }
+    }
+  }
+
+  walk(lexiconDir);
+  return result;
+}
+
+function expectedLexiconType(rangeType: string | null, owlType: string | string[]) {
+  if (rangeType === "xsd:string") return { type: "string" };
+  if (rangeType === "xsd:boolean") return { type: "boolean" };
+  if (rangeType === "xsd:dateTimeStamp") return { type: "string", format: "datetime" };
+  if (rangeType === "xsd:anyURI") return { type: "string", format: "uri" };
+  if (rangeType === "xsd:decimal" || rangeType === "xsd:float" || rangeType === "dtype:numericUnion") {
+    return { type: "ref", ref: "vf.defs#measure" };
+  }
+  if (rangeType === "xsd:integer" || rangeType === "xsd:int") return { type: "integer" };
+
+  // Agent references → DID
+  if (AGENT_CLASSES.has(rangeType || "")) return { type: "string", format: "did" };
+
+  // Measure → embedded ref
+  if (rangeType === "Measure" || rangeType === "om:Measure") return { type: "ref", ref: "vf.defs#measure" };
+
+  // Action self-ref (pairsWith)
+  if (rangeType === "Action") return { type: "string", note: "knownValues enum or at-uri" };
+
+  // Enum classes → knownValues
+  if (ENUM_CLASS_NAMES.has(rangeType || "")) return { type: "string", note: "enum as knownValues" };
+
+  // Record references → AT-URI
+  if (RECORD_CLASSES.has(rangeType || "")) return { type: "string", format: "at-uri" };
+
+  // Geometry
+  if (rangeType === "geosparql:Geometry") return { type: "string", note: "geometry" };
+
+  // time:Duration
+  if (rangeType === "time:Duration") return { type: "ref", ref: "vf.defs#measure" };
+
+  return { type: "unknown", raw: rangeType };
+}
+
+function auditLexicons() {
+  const onDisk = loadOnDiskLexicons();
+  const allNsids = new Set(Object.keys(onDisk));
+
+  // Build expected properties per class from parsed ontology data
+  const expectedByClass: Record<string, Record<string, any>> = {};
+  for (const cls of Object.keys(CLASS_TO_NSID)) {
+    expectedByClass[cls] = {};
+  }
+  for (const [propName, prop] of Object.entries(properties)) {
+    for (const domainClass of prop.domains) {
+      if (expectedByClass[domainClass]) {
+        expectedByClass[domainClass][propName] = prop;
+      }
+    }
+  }
+
+  const report = {
+    classesNotMapped: [] as any[],
+    missingFromLexicon: [] as any[],
+    extraInLexicon: [] as any[],
+    typeMismatches: [] as any[],
+    summary: { total: 0, missing: 0, extra: 0, mismatched: 0 },
+  };
+
+  // ── Header ──
+  console.log("╔══════════════════════════════════════════════════════════════════╗");
+  console.log("║         VF ONTOLOGY → AT PROTOCOL LEXICON AUDIT REPORT         ║");
+  console.log("╚══════════════════════════════════════════════════════════════════╝\n");
+
+  // ── Section 1: Unmapped classes ──
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  1. CLASSES IN VF.JSON NOT MAPPED TO LEXICONS");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  const nsidClassNames = new Set(Object.keys(CLASS_TO_NSID));
+  for (const cls of Object.keys(classes)) {
+    if (!nsidClassNames.has(cls) && !SKIP_CLASSES.has(cls)) {
+      report.classesNotMapped.push({
+        class: cls,
+        label: classes[cls].label,
+        status: classes[cls].status,
+      });
+    }
+  }
+
+  if (report.classesNotMapped.length === 0) {
+    console.log("  ✓ All classes mapped (or intentionally skipped)");
+  } else {
+    for (const item of report.classesNotMapped) {
+      console.log(`  ✗ ${item.class} (${item.label || ""}) [${item.status || ""}]`);
+    }
+  }
+  console.log(`  Intentionally skipped: ${[...SKIP_CLASSES].join(", ")}`);
+  console.log();
+
+  // ── Sections 2–4: Per-class property comparison ──
+  for (const [className, nsid] of Object.entries(CLASS_TO_NSID)) {
+    const expected = expectedByClass[className] || {};
+    const lexicon = onDisk[nsid];
+
+    if (!lexicon) {
+      report.classesNotMapped.push({ class: className, nsid, error: "LEXICON FILE MISSING" });
+      continue;
+    }
+
+    const record = lexicon.defs?.main?.record;
+    if (!record) continue;
+
+    const lexiconProps = record.properties || {};
+    const expectedPropNames = Object.keys(expected);
+    const lexiconPropNames = Object.keys(lexiconProps);
+
+    // Missing properties
+    for (const propName of expectedPropNames) {
+      report.summary.total++;
+      if (!lexiconProps[propName]) {
+        const prop = expected[propName];
+        report.missingFromLexicon.push({
+          nsid,
+          property: propName,
+          rangeType: Array.isArray(prop.range) ? prop.range.join(" | ") : prop.range,
+          owlType: prop.type,
+          comment: prop.comment,
+          status: prop.status,
+        });
+        report.summary.missing++;
+      }
+    }
+
+    // Extra properties
+    for (const propName of lexiconPropNames) {
+      if (!expected[propName]) {
+        const lexProp = lexiconProps[propName];
+        report.extraInLexicon.push({
+          nsid,
+          property: propName,
+          lexiconType: lexProp.type,
+          lexiconFormat: lexProp.format,
+          description: lexProp.description,
+        });
+        report.summary.extra++;
+      }
+    }
+
+    // Type mismatches
+    for (const propName of expectedPropNames) {
+      if (!lexiconProps[propName]) continue;
+      const prop = expected[propName];
+      const lexProp = lexiconProps[propName];
+      const rangeStr = Array.isArray(prop.range) ? prop.range[0] : prop.range;
+      const expType = expectedLexiconType(rangeStr, prop.type);
+      const issues: string[] = [];
+
+      if (expType.type !== "unknown") {
+        if (lexProp.type === "array") {
+          // Arrays are acceptable for multi-valued properties
+        } else if (expType.type === "ref" && lexProp.type === "ref") {
+          if ((expType as any).ref && lexProp.ref !== (expType as any).ref) {
+            issues.push(`ref mismatch: expected ${(expType as any).ref}, got ${lexProp.ref}`);
+          }
+        } else if (expType.type === "string" && lexProp.type === "string") {
+          if ((expType as any).format && lexProp.format !== (expType as any).format) {
+            issues.push(`format mismatch: expected ${(expType as any).format}, got ${lexProp.format || "none"}`);
+          }
+        } else if (expType.type !== lexProp.type && lexProp.type !== "array") {
+          if (!(expType as any).note) {
+            issues.push(`type mismatch: expected ${expType.type}, got ${lexProp.type}`);
+          }
+        }
+      }
+
+      if (issues.length > 0) {
+        report.typeMismatches.push({
+          nsid,
+          property: propName,
+          vfRange: rangeStr,
+          lexiconType: lexProp.type,
+          lexiconFormat: lexProp.format,
+          lexiconRef: lexProp.ref,
+          issues,
+        });
+        report.summary.mismatched++;
+      }
+    }
+  }
+
+  // Print section 2
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  2. PROPERTIES IN VF.JSON MISSING FROM LEXICONS");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  if (report.missingFromLexicon.length === 0) {
+    console.log("  ✓ No missing properties");
+  } else {
+    const grouped: Record<string, any[]> = {};
+    for (const item of report.missingFromLexicon) {
+      if (!grouped[item.nsid]) grouped[item.nsid] = [];
+      grouped[item.nsid].push(item);
+    }
+    for (const [nsid, items] of Object.entries(grouped)) {
+      console.log(`\n  ${nsid}:`);
+      for (const item of items) {
+        console.log(`    ✗ ${item.property}`);
+        console.log(`      Range: ${item.rangeType} | OWL: ${item.owlType} | Status: ${item.status}`);
+        console.log(`      "${item.comment}"`);
+      }
+    }
+  }
+  console.log();
+
+  // Print section 3
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  3. PROPERTIES IN LEXICONS NOT IN VF.JSON (ADDITIONS)");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  if (report.extraInLexicon.length === 0) {
+    console.log("  ✓ No extra properties");
+  } else {
+    const grouped: Record<string, any[]> = {};
+    for (const item of report.extraInLexicon) {
+      if (!grouped[item.nsid]) grouped[item.nsid] = [];
+      grouped[item.nsid].push(item);
+    }
+    for (const [nsid, items] of Object.entries(grouped)) {
+      console.log(`\n  ${nsid}:`);
+      for (const item of items) {
+        console.log(`    + ${item.property} (${item.lexiconType}${item.lexiconFormat ? `, format: ${item.lexiconFormat}` : ""})`);
+        console.log(`      "${item.description}"`);
+      }
+    }
+  }
+  console.log();
+
+  // Print section 4
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  4. TYPE/FORMAT MISMATCHES");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  if (report.typeMismatches.length === 0) {
+    console.log("  ✓ No type mismatches");
+  } else {
+    for (const item of report.typeMismatches) {
+      console.log(`  ✗ ${item.nsid}.${item.property}`);
+      console.log(`    VF range: ${item.vfRange}`);
+      console.log(`    Lexicon: type=${item.lexiconType}, format=${item.lexiconFormat || "none"}, ref=${item.lexiconRef || "none"}`);
+      for (const issue of item.issues) {
+        console.log(`    → ${issue}`);
+      }
+    }
+  }
+  console.log();
+
+  // ── Section 5: Action named individuals ──
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  5. ACTION NAMED INDIVIDUALS");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  const vfActionIds = Object.entries(namedIndividuals)
+    .filter(([, ni]) => ni.types.includes("vf:Action"))
+    .map(([id]) => id);
+  const vfActionLabels = vfActionIds.map((id) => namedIndividuals[id].label || id);
+
+  const actionLexicon = onDisk["vf.knowledge.action"];
+  const actionProps = actionLexicon?.defs?.main?.record?.properties || {};
+  const actionKnownValues = actionProps.actionId?.knownValues || [];
+
+  console.log(`  VF actions (${vfActionIds.length}): ${vfActionLabels.join(", ")}`);
+  console.log(`  Lexicon actionId knownValues (${actionKnownValues.length}): ${actionKnownValues.join(", ")}`);
+
+  // Check named individual properties vs lexicon properties
+  const actionNamedProps = new Set<string>();
+  for (const actionId of vfActionIds) {
+    const node = namedIndividuals[actionId].node;
+    for (const key of Object.keys(node)) {
+      if (key.startsWith("vf:")) {
+        actionNamedProps.add(key.replace("vf:", ""));
+      }
+    }
+  }
+
+  console.log(`\n  Action properties in vf.json named individuals: ${[...actionNamedProps].join(", ")}`);
+  console.log(`  Action properties in lexicon: ${Object.keys(actionProps).join(", ")}`);
+
+  const missingActionProps = [...actionNamedProps].filter((p) => !actionProps[p]);
+  const extraActionProps = Object.keys(actionProps).filter((p) => !actionNamedProps.has(p) && p !== "actionId");
+  if (missingActionProps.length > 0) {
+    console.log(`  ✗ Missing from action lexicon: ${missingActionProps.join(", ")}`);
+  }
+  if (extraActionProps.length > 0) {
+    console.log(`  + Extra in action lexicon: ${extraActionProps.join(", ")}`);
+  }
+  console.log();
+
+  // ── Section 6: Measure definition ──
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  6. VF.DEFS MEASURE DEFINITION");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  const defsLexicon = onDisk["vf.defs"];
+  const measureDef = defsLexicon?.defs?.measure;
+  const measureExpectedProps = ["hasNumericalValue", "hasDenominator", "hasUnit"];
+
+  if (measureDef) {
+    const measureProps = Object.keys(measureDef.properties || {});
+    console.log(`  Defined properties: ${measureProps.join(", ")}`);
+    console.log(`  Expected: ${measureExpectedProps.join(", ")}`);
+    const missingMeasure = measureExpectedProps.filter((p) => !measureDef.properties[p]);
+    if (missingMeasure.length > 0) {
+      console.log(`  ✗ Missing: ${missingMeasure.join(", ")}`);
+    } else {
+      console.log("  ✓ All measure properties present");
+    }
+  } else {
+    console.log("  ✗ vf.defs#measure not found!");
+  }
+  console.log();
+
+  // ── Section 7: Cross-reference integrity ──
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  7. CROSS-REFERENCE INTEGRITY");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  let brokenRefs = 0;
+  for (const [nsid, lex] of Object.entries(onDisk)) {
+    // Check main record properties
+    const props = lex.defs?.main?.record?.properties || {};
+    for (const [propName, propDef] of Object.entries(props) as [string, any][]) {
+      if (propDef.ref) {
+        const [refNsid] = propDef.ref.split("#");
+        if (!allNsids.has(refNsid)) {
+          console.log(`  ✗ ${nsid}.${propName}: ref "${propDef.ref}" → ${refNsid} NOT FOUND`);
+          brokenRefs++;
+        }
+      }
+      if (propDef.items?.ref) {
+        const [refNsid] = propDef.items.ref.split("#");
+        if (!allNsids.has(refNsid)) {
+          console.log(`  ✗ ${nsid}.${propName}[]: ref "${propDef.items.ref}" → ${refNsid} NOT FOUND`);
+          brokenRefs++;
+        }
+      }
+    }
+    // Check non-main defs
+    for (const [defName, def] of Object.entries(lex.defs || {}) as [string, any][]) {
+      if (defName === "main") continue;
+      const defProps = def.properties || {};
+      for (const [propName, propDef] of Object.entries(defProps) as [string, any][]) {
+        if (propDef.ref) {
+          const [refNsid] = propDef.ref.split("#");
+          if (!allNsids.has(refNsid)) {
+            console.log(`  ✗ ${nsid}#${defName}.${propName}: ref "${propDef.ref}" → ${refNsid} NOT FOUND`);
+            brokenRefs++;
+          }
+        }
+      }
+    }
+  }
+  if (brokenRefs === 0) {
+    console.log("  ✓ All refs resolve to existing lexicons");
+  }
+  console.log();
+
+  // ── Summary ──
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log("  SUMMARY");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(`  Total VF properties checked: ${report.summary.total}`);
+  console.log(`  Missing from lexicons:       ${report.summary.missing}`);
+  console.log(`  Extra in lexicons:           ${report.summary.extra}`);
+  console.log(`  Type/format mismatches:      ${report.summary.mismatched}`);
+  console.log(`  Unmapped classes:            ${report.classesNotMapped.length}`);
+  console.log(`  Broken refs:                 ${brokenRefs}`);
+  console.log();
 }

@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.geo.spatialThing",
+  "id": "vf.knowledge.spatialThing",
   "defs": {
     "main": {
       "type": "record",

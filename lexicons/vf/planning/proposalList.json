@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.proposal.proposalList",
+  "id": "vf.planning.proposalList",
   "defs": {
     "main": {
       "type": "record",

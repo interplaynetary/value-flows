@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.recipe.recipeExchange",
+  "id": "vf.knowledge.recipeExchange",
   "defs": {
     "main": {
       "type": "record",

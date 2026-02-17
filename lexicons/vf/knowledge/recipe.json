@@ -1,18 +1,26 @@
 {
   "lexicon": 1,
-  "id": "vf.agreement.agreementBundle",
+  "id": "vf.knowledge.recipe",
   "defs": {
     "main": {
       "type": "record",
-      "description": "A grouping of agreements to bundle detailed line item reciprocity.",
+      "description": "Optional instance of a recipe which directly specifies the recipe processes included.",
       "key": "tid",
       "record": {
         "type": "object",
         "properties": {
-          "created": {
+          "primaryOutput": {
             "type": "string",
-            "format": "datetime",
-            "description": "The date, and time if desired, the information was agreed to or recorded."
+            "format": "at-uri",
+            "description": "The main type of resource the recipe is intended to produce or deliver."
+          },
+          "recipeIncludes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The collection of processes needed for this recipe."
           },
           "name": {
             "type": "string",
@@ -23,14 +31,6 @@
             "type": "string",
             "description": "Any useful textual information related to the item.",
             "maxGraphemes": 10000
-          },
-          "bundles": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "at-uri"
-            },
-            "description": "All the agreements included in this agreement bundle."
           }
         }
       }

@@ -1,6 +1,6 @@
 {
   "lexicon": 1,
-  "id": "vf.resource.batchLotRecord",
+  "id": "vf.observation.batchLotRecord",
   "defs": {
     "main": {
       "type": "record",

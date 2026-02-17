@@ -1,26 +1,18 @@
 {
   "lexicon": 1,
-  "id": "vf.recipe.recipe",
+  "id": "vf.planning.agreementBundle",
   "defs": {
     "main": {
       "type": "record",
-      "description": "Optional instance of a recipe which directly specifies the recipe processes included.",
+      "description": "A grouping of agreements to bundle detailed line item reciprocity.",
       "key": "tid",
       "record": {
         "type": "object",
         "properties": {
-          "primaryOutput": {
+          "created": {
             "type": "string",
-            "format": "at-uri",
-            "description": "The main type of resource the recipe is intended to produce or deliver."
-          },
-          "recipeIncludes": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "at-uri"
-            },
-            "description": "The collection of processes needed for this recipe."
+            "format": "datetime",
+            "description": "The date, and time if desired, the information was agreed to or recorded."
           },
           "name": {
             "type": "string",
@@ -31,6 +23,14 @@
             "type": "string",
             "description": "Any useful textual information related to the item.",
             "maxGraphemes": 10000
+          },
+          "bundles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the agreements included in this agreement bundle."
           }
         }
       }
