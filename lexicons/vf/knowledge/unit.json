@@ -1,32 +1,36 @@
 {
   "lexicon": 1,
   "id": "vf.knowledge.unit",
-  "description": "A standard unit of measure, defined and adopted by convention or by law.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A standard unit of measure, defined and adopted by convention or by law.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["label"],
+        "required": [
+          "label"
+        ],
         "properties": {
-          "label": {
-            "type": "string",
-            "description": "The display label for the unit of measure."
-          },
-          "symbol": {
-            "type": "string",
-            "description": "The display symbol for the unit of measure (e.g. kg, m, hr)."
-          },
           "omUnitIdentifier": {
             "type": "string",
             "format": "uri",
-            "description": "The unique URI identifier of the OM unit of measure, for standardization across networks."
+            "description": "The unique identifier of the om unit of measure, for standardization across networks."
+          },
+          "label": {
+            "type": "string",
+            "description": "The display label defined for the network for the unit of measure, overrides om."
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The display symbol defined for the network for the unit of measure, overrides om."
           },
           "classifiedAs": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Classification URIs or tags for categorization."
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
           }
         }
       }

@@ -1,27 +1,21 @@
 {
   "lexicon": 1,
   "id": "vf.agreement.agreementBundle",
-  "description": "A grouping of agreements to bundle detailed line item reciprocity.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A grouping of agreements to bundle detailed line item reciprocity.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the agreement bundle."
-          },
           "bundles": {
             "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.agreement.agreement records included in this bundle."
-          },
-          "note": {
-            "type": "string",
-            "description": "Any useful textual information about the agreement bundle."
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the agreements included in this agreement bundle."
           }
         }
       }

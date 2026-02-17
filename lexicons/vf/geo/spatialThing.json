@@ -1,41 +1,42 @@
 {
   "lexicon": 1,
   "id": "vf.geo.spatialThing",
-  "description": "Data that locates something relative to the Earth, usually a somewhat fixed location.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "Data that locates something relative to the Earth, usually a somewhat fixed location.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
+          "long": {
             "type": "string",
-            "description": "An informal or formal textual identifier for the location."
+            "description": "The WGS84 longitude of a spatial thing (decimal degrees)."
           },
           "lat": {
-            "type": "ref",
-            "ref": "vf.defs#measure",
-            "description": "The WGS84 latitude of a spatial thing (decimal degrees), expressed as numerator/denominator."
-          },
-          "long": {
-            "type": "ref",
-            "ref": "vf.defs#measure",
-            "description": "The WGS84 longitude of a spatial thing (decimal degrees), expressed as numerator/denominator."
+            "type": "string",
+            "description": "The WGS84 latitude of a spatial thing (decimal degrees)."
           },
           "alt": {
-            "type": "ref",
-            "ref": "vf.defs#measure",
-            "description": "The WGS84 altitude (decimal meters above the local reference ellipsoid), expressed as numerator/denominator."
+            "type": "string",
+            "description": "The WGS84 altitude of a spatial thing (decimal meters above the local reference ellipsoid)"
           },
           "mappableAddress": {
             "type": "string",
             "description": "A textual address that can be mapped using mapping software."
           },
+          "hasDetailedGeometry": {
+            "type": "string",
+            "description": "A spatial geometry of any complexity and tooling supported by geosparql."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
+          },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the location."
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
           }
         }
       }

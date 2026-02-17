@@ -1,55 +1,57 @@
 {
   "lexicon": 1,
   "id": "vf.knowledge.resourceSpecification",
-  "description": "Specifies the kind of economic or environmental resource. Could define a material or digital thing, service, medium of exchange or currency, skill or type of work.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "Specifies the kind of economic or environmental resource, even if the resource is not instantiated as an EconomicResource. Could define a material or digital thing, service, medium of exchange or currency, skill or type of work.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the resource specification."
-          },
-          "note": {
-            "type": "string",
-            "description": "Any useful textual information about the resource specification."
-          },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "URI to an image relevant to the resource specification."
-          },
-          "resourceClassifiedAs": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Classification URIs or tags for categorization."
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
           },
           "imageList": {
-            "type": "array",
-            "items": { "type": "string", "format": "uri" },
-            "description": "URIs to images relevant to the resource specification."
-          },
-          "defaultUnitOfResource": {
             "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.knowledge.unit record for the default unit."
+            "format": "uri",
+            "description": "A comma separated list of uri addresses to images relevant to the resource."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "mediumOfExchange": {
+            "type": "boolean",
+            "description": "True if the resource is a currency, money, token, credit, etc. used as a medium of exchange."
+          },
+          "substitutable": {
+            "type": "boolean",
+            "description": "Defines if any resource of that type can be freely substituted for any other resource of that type when used, consumed, traded, etc."
           },
           "defaultUnitOfEffort": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.knowledge.unit record for the default effort unit."
+            "description": "The default unit used for use or work."
           },
-          "substitutable": {
-            "type": "boolean",
-            "description": "Defines if any resource of this type can be freely substituted for another of the same type."
+          "defaultUnitOfResource": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The default unit used for the resource itself."
           },
-          "mediumOfExchange": {
-            "type": "boolean",
-            "description": "True if the resource is a currency, money, token, credit, etc."
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
           }
         }
       }

@@ -1,37 +1,39 @@
 {
   "lexicon": 1,
   "id": "vf.agent.organization",
-  "description": "A functional structure, formal or informal, which can include people and/or other organizations, and has its own agency.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A functional structure, formal or informal, which can include people and/or other organizations, and has its own agency.  Something called a group is an Organization in Valueflows if it has agency as the group.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
+          "primaryLocation": {
             "type": "string",
-            "description": "An informal or formal textual identifier for the organization."
+            "format": "at-uri",
+            "description": "The main place an agent is located, often an address where activities occur and mail can be sent. This is usually a mappable geographic location."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "URI to an image relevant to the organization, such as a logo."
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
           },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the organization."
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
           },
           "classifiedAs": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Classification URIs or tags for categorization."
-          },
-          "primaryLocation": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.geo.spatialThing record for the organization's main location."
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
           }
         }
       }

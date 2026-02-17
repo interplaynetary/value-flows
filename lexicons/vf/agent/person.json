@@ -1,32 +1,32 @@
 {
   "lexicon": 1,
   "id": "vf.agent.person",
-  "description": "A human being. All persons are considered agents.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A human being. All persons are considered agents.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
+          "primaryLocation": {
             "type": "string",
-            "description": "An informal or formal textual identifier for the agent."
+            "format": "at-uri",
+            "description": "The main place an agent is located, often an address where activities occur and mail can be sent. This is usually a mappable geographic location."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "URI to an image relevant to the agent, such as a photo or avatar."
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
           },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the agent."
-          },
-          "primaryLocation": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.geo.spatialThing record for the agent's main location."
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
           }
         }
       }

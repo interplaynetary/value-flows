@@ -1,32 +1,29 @@
 {
   "lexicon": 1,
   "id": "vf.proposal.proposalList",
-  "description": "A grouping of proposals, for publishing as a list.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A grouping of proposals, for publishing as a list.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the proposal list."
+          "proposedTo": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "did"
+            },
+            "description": "The agent(s) to which the proposal or proposal list is published."
           },
           "lists": {
             "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.proposal.proposal records included in this list."
-          },
-          "proposedTo": {
-            "type": "array",
-            "items": { "type": "string", "format": "did" },
-            "description": "DIDs of agents to which the proposal list is published."
-          },
-          "note": {
-            "type": "string",
-            "description": "Any useful textual information about the proposal list."
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the proposals included in this proposal list."
           }
         }
       }

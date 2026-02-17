@@ -1,71 +1,86 @@
 {
   "lexicon": 1,
   "id": "vf.proposal.proposal",
-  "description": "Published requests or offers, sometimes with what is expected in return.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "Published requests or offers, sometimes with what is expected in return.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the proposal."
-          },
-          "purpose": {
-            "type": "string",
-            "description": "The type of proposal, whether offer or request.",
-            "knownValues": ["offer", "request"]
-          },
-          "publishes": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.planning.intent records that are the primary intents of this proposal."
-          },
-          "reciprocal": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.planning.intent records that are the reciprocal intents of this proposal."
-          },
-          "proposedTo": {
-            "type": "array",
-            "items": { "type": "string", "format": "did" },
-            "description": "DIDs of agents to which the proposal is published."
-          },
-          "eligibleLocation": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.geo.spatialThing where the proposal is valid."
-          },
-          "listedIn": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.proposal.proposalList this proposal is part of."
-          },
-          "unitBased": {
-            "type": "boolean",
-            "description": "This group of commitments contains unit based quantities which can be multiplied. Default false."
-          },
           "hasBeginning": {
             "type": "string",
             "format": "datetime",
-            "description": "The beginning date/time of the proposal's validity."
+            "description": "The planned or actual beginning date, and time if desired, of a flow or process."
           },
           "hasEnd": {
             "type": "string",
             "format": "datetime",
-            "description": "The ending date/time of the proposal's validity."
+            "description": "The planned or actual ending date, and time if desired, of a flow or process."
+          },
+          "unitBased": {
+            "type": "boolean",
+            "description": "This group of commitments contains unit based quantities, which can be multipied to create commitments; commonly seen in a price list or e-commerce. Default false."
+          },
+          "purpose": {
+            "type": "string",
+            "description": "The type of proposal, whether offer or request (others may be added as need arises).",
+            "knownValues": [
+              "offer",
+              "request"
+            ]
           },
           "created": {
             "type": "string",
             "format": "datetime",
-            "description": "The date/time the proposal was created."
+            "description": "The date, and time if desired, the information was agreed to or recorded."
+          },
+          "eligibleLocation": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Location or area where the proposal is valid."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
           },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the proposal."
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "publishes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The primary intent(s) of this published proposal. Would be used in intent matching."
+          },
+          "reciprocal": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The reciprocal intent(s) of this published proposal. Not meant to be used for intent matching."
+          },
+          "proposedTo": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "did"
+            },
+            "description": "The agent(s) to which the proposal or proposal list is published."
+          },
+          "listedIn": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "This proposal is part of these lists of proposals."
           }
         }
       }

@@ -1,77 +1,77 @@
 {
   "lexicon": 1,
   "id": "vf.recipe.recipeFlow",
-  "description": "The specification of a resource inflow to, or outflow from, a recipe process; and/or a clause, or reciprocal clause, of a recipe exchange.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "The specification of a resource inflow to, or outflow from, a recipe process; and/or a clause, or reciprocal clause, of a recipe exchange.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["action"],
+        "required": [
+          "action"
+        ],
         "properties": {
           "action": {
             "type": "string",
-            "description": "Defines the kind of flow.",
-            "knownValues": [
-              "accept", "cite", "combine", "consume", "copy",
-              "deliver-service", "dropoff", "lower", "modify", "move",
-              "pickup", "produce", "raise", "separate", "transfer",
-              "transfer-all-rights", "transfer-custody", "use", "work"
-            ]
-          },
-          "resourceConformsTo": {
-            "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.knowledge.resourceSpecification."
-          },
-          "resourceClassifiedAs": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Classification URIs or tags for the resource."
-          },
-          "resourceQuantity": {
-            "type": "ref",
-            "ref": "vf.defs#measure",
-            "description": "The amount and unit of the economic resource."
-          },
-          "effortQuantity": {
-            "type": "ref",
-            "ref": "vf.defs#measure",
-            "description": "The amount and unit of effort."
+            "description": "Defines the kind of flow, such as consume, produce, work, transfer, etc."
           },
           "recipeInputOf": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.recipe.recipeProcess this flow is an input of."
+            "description": "Relates an input flow to its process in a recipe."
           },
           "recipeOutputOf": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.recipe.recipeProcess this flow is an output of."
+            "description": "Relates an output flow to its process in a recipe."
           },
           "recipeClauseOf": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.recipe.recipeExchange this flow is a primary clause of."
+            "description": "Relates a flow to its exchange agreement in a recipe."
           },
           "recipeReciprocalClauseOf": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.recipe.recipeExchange this flow is a reciprocal clause of."
+            "description": "Relates a reciprocal flow to its exchange agreement in a recipe."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the economic resource counted or inventoried."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "vf.defs#measure",
+            "description": "The amount and unit of the work or use or citation effort-based action. This is often expressed with a time unit, but also could be cycle counts or other measures of effort or usefulness."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
+          },
+          "resourceConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not."
           },
           "stage": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.knowledge.processSpecification for the required resource stage."
+            "description": "The required stage of the desired input economic resource. References the ProcessSpecification of the last process the economic resource went through."
           },
           "state": {
             "type": "string",
-            "description": "The required state of the desired resource."
-          },
-          "note": {
-            "type": "string",
-            "description": "Any useful textual information about the recipe flow."
+            "description": "The required state of the desired input economic resource, after coming out of a test or review process."
           }
         }
       }

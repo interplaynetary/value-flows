@@ -1,56 +1,68 @@
 {
   "lexicon": 1,
   "id": "vf.agreement.agreement",
-  "description": "A set of reciprocal commitments among economic agents, and/or a set of reciprocal economic events.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "A set of reciprocal commitments among economic agents, and/or a set of reciprocal economic events.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the agreement."
+          "unitBased": {
+            "type": "boolean",
+            "description": "This group of commitments contains unit based quantities, which can be multipied to create commitments; commonly seen in a price list or e-commerce. Default false."
           },
           "created": {
             "type": "string",
             "format": "datetime",
-            "description": "The date/time the agreement was created."
+            "description": "The date, and time if desired, the information was agreed to or recorded."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "stipulates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the primary commitments that constitute the agreement."
+          },
+          "stipulatesReciprocal": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the reciprocal commitments that constitute the agreement."
+          },
+          "realizes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the non-reciprocal economic events (with or without commitments) that realize the agreement."
+          },
+          "realizesReciprocal": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the reciprocal economic events (with or without commitments) that realize the agreement."
           },
           "bundledIn": {
             "type": "string",
             "format": "at-uri",
-            "description": "Reference to a vf.agreement.agreementBundle this agreement is part of."
-          },
-          "unitBased": {
-            "type": "boolean",
-            "description": "This group of commitments contains unit based quantities which can be multiplied. Default false."
-          },
-          "stipulates": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.planning.commitment records that are the primary clauses of this agreement."
-          },
-          "stipulatesReciprocal": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.planning.commitment records that are the reciprocal clauses of this agreement."
-          },
-          "realizes": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.observation.economicEvent records that realize this agreement."
-          },
-          "realizesReciprocal": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.observation.economicEvent records that are the reciprocal realization of this agreement."
-          },
-          "note": {
-            "type": "string",
-            "description": "Any useful textual information about the agreement."
+            "description": "This agreement is bundled with other agreements, for example in an order."
           }
         }
       }

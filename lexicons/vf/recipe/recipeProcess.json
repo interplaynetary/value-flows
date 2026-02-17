@@ -1,52 +1,60 @@
 {
   "lexicon": 1,
   "id": "vf.recipe.recipeProcess",
-  "description": "Specifies a process in a recipe for use in planning from recipe.",
   "defs": {
     "main": {
       "type": "record",
+      "description": "Specifies a process in a recipe for use in planning from recipe.",
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["name"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "An informal or formal textual identifier for the recipe process."
-          },
-          "processConformsTo": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "Reference to a vf.knowledge.processSpecification this recipe process conforms to."
-          },
-          "processClassifiedAs": {
+          "hasRecipeInput": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Classification URIs or tags for the process."
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the inputs of a recipe process."
+          },
+          "hasRecipeOutput": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the outputs of a recipe process."
           },
           "hasDuration": {
             "type": "ref",
             "ref": "vf.defs#measure",
-            "description": "The temporal extent of the process, expressed as a duration measure."
-          },
-          "hasRecipeInput": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.recipe.recipeFlow records that are inputs of this recipe process."
-          },
-          "hasRecipeOutput": {
-            "type": "array",
-            "items": { "type": "string", "format": "at-uri" },
-            "description": "References to vf.recipe.recipeFlow records that are outputs of this recipe process."
+            "description": "The temporal extent of the process."
           },
           "image": {
             "type": "string",
             "format": "uri",
-            "description": "URI to an image relevant to the recipe process."
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness."
           },
           "note": {
             "type": "string",
-            "description": "Any useful textual information about the recipe process."
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "processClassifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
+          },
+          "processConformsTo": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The standard specification or definition of a type of process."
           }
         }
       }
