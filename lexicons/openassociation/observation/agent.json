@@ -1,0 +1,52 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.observation.agent",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A human being. All persons are considered agents.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of agent.",
+            "enum": [
+              "person",
+              "organization",
+              "ecologicalAgent"
+            ]
+          },
+          "primaryLocation": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The main place an agent is located, often an address where activities occur and mail can be sent. This is usually a mappable geographic location."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness.",
+            "maxGraphemes": 640
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "classifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
+          }
+        }
+      }
+    }
+  }
+}

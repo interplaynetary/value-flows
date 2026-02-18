@@ -35,6 +35,7 @@ const MAPPING_PATH = getArg("--mapping") || "specs/vf/class-to-nsid.json";
 const OUTPUT_BASE = getArg("--output") || "lexicons";
 const AUDIT_MODE: boolean = Bun.argv.includes("--audit");
 const ROOT: string = join(import.meta.dir, "..");
+const NS: string = process.env.NSID ?? "org.openassociation";
 
 if (Bun.argv.includes("--debug")) {
   console.log(`Debug: ROOT=${ROOT}`);
@@ -400,7 +401,7 @@ function rangeToLexiconType(propName: string, range: string | string[] | null, p
 
   // Measure → embedded object ref
   if (effectiveRange === "Measure") {
-    return { type: "ref", ref: "vf.defs#measure" };
+    return { type: "ref", ref: `${NS}.defs#measure` };
   }
 
   // Agent references → DID format
@@ -556,7 +557,7 @@ function buildActionLexicon(): LexiconDocument | null {
 function buildDefsLexicon(): LexiconDocument {
   return {
     lexicon: 1,
-    id: "vf.defs",
+    id: `${NS}.defs`,
     defs: {
       measure: {
         type: "object",
@@ -589,7 +590,7 @@ function buildDefsLexicon(): LexiconDocument {
 const allLexicons: Record<string, LexiconDocument | null> = {};
 
 // 1. Shared defs
-allLexicons["vf.defs"] = buildDefsLexicon();
+allLexicons[`${NS}.defs`] = buildDefsLexicon();
 
 // 2. All record types
 for (const className of Object.keys(CLASS_TO_NSID)) {
@@ -613,15 +614,15 @@ if (AUDIT_MODE) {
 
  function writeLexicons(): void {
   // Write defs if they were generated
-  if (allLexicons["vf.defs"]) {
+  if (allLexicons[`${NS}.defs`]) {
     const defsPath = join(ROOT, OUTPUT_BASE, "defs.json");
     mkdirSync(dirname(defsPath), { recursive: true });
-    writeFileSync(defsPath, JSON.stringify(allLexicons["vf.defs"], null, 2) + "\n");
+    writeFileSync(defsPath, JSON.stringify(allLexicons[`${NS}.defs`], null, 2) + "\n");
     console.log(`✓ ${defsPath}`);
   }
 
   for (const [nsid, lexicon] of Object.entries(allLexicons)) {
-    if (nsid === "vf.defs") continue;
+    if (nsid === `${NS}.defs`) continue;
     if (!lexicon) {
       console.log(`✗ ${nsid} — failed to generate`);
       continue;
@@ -676,7 +677,7 @@ function expectedLexiconType(rangeType: string | null, owlType: string | string[
   if (rangeType === "xsd:dateTimeStamp") return { type: "string", format: "datetime" };
   if (rangeType === "xsd:anyURI") return { type: "string", format: "uri" };
   if (rangeType === "xsd:decimal" || rangeType === "xsd:float" || rangeType === "dtype:numericUnion") {
-    return { type: "ref", ref: "vf.defs#measure" };
+    return { type: "ref", ref: `${NS}.defs#measure` };
   }
   if (rangeType === "xsd:integer" || rangeType === "xsd:int") return { type: "integer" };
 
@@ -684,7 +685,7 @@ function expectedLexiconType(rangeType: string | null, owlType: string | string[
   if (AGENT_CLASSES.has(rangeType || "")) return { type: "string", format: "did" };
 
   // Measure → embedded ref
-  if (rangeType === "Measure" || rangeType === "om:Measure") return { type: "ref", ref: "vf.defs#measure" };
+  if (rangeType === "Measure" || rangeType === "om:Measure") return { type: "ref", ref: `${NS}.defs#measure` };
 
   // Action self-ref (pairsWith)
   if (rangeType === "Action") return { type: "string", note: "knownValues enum or at-uri" };
@@ -699,7 +700,7 @@ function expectedLexiconType(rangeType: string | null, owlType: string | string[
   if (rangeType === "geosparql:Geometry") return { type: "string", note: "geometry" };
 
   // time:Duration
-  if (rangeType === "time:Duration") return { type: "ref", ref: "vf.defs#measure" };
+  if (rangeType === "time:Duration") return { type: "ref", ref: `${NS}.defs#measure` };
 
   return { type: "unknown", raw: rangeType };
 }
@@ -924,7 +925,7 @@ function auditLexicons(): void {
     .map(([id]) => id);
   const vfActionLabels: string[] = vfActionIds.map((id) => namedIndividuals[id].label || id);
 
-  const actionLexicon = onDisk["vf.knowledge.action"];
+  const actionLexicon = onDisk[`${NS}.knowledge.action`];
   const actionProps: Record<string, any> = actionLexicon?.defs?.main?.record?.properties || {};
   const actionKnownValues: string[] = actionProps.actionId?.knownValues || [];
 
@@ -960,7 +961,7 @@ function auditLexicons(): void {
   console.log("  6. VF.DEFS MEASURE DEFINITION");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-  const defsLexicon = onDisk["vf.defs"];
+  const defsLexicon = onDisk[`${NS}.defs`];
   const measureDef = defsLexicon?.defs?.measure;
   const measureExpectedProps: string[] = ["hasNumericalValue", "hasDenominator", "hasUnit"];
 

@@ -1,0 +1,39 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.planning.agreementBundle",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A grouping of agreements to bundle detailed line item reciprocity.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date, and time if desired, the information was agreed to or recorded."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness.",
+            "maxGraphemes": 640
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "bundles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "All the agreements included in this agreement bundle."
+          }
+        }
+      }
+    }
+  }
+}

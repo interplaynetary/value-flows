@@ -243,11 +243,23 @@ Common status codes: `400` bad request · `401`/`403` auth required · `404` unk
 
 For Svelte 5 integration patterns, see [`docs/svelte.md`](docs/svelte.md).
 
+## GraphQL Gateway
+
+`scripts/graphql-gateway.ts` is a standalone Apollo Server that auto-generates a typed GraphQL schema from the lexicons and proxies queries to HappyView XRPC. AT-URI relationship fields (e.g. `action`, `resourceInventoriedAs`) are resolved as typed GraphQL fields via DataLoader.
+
+```bash
+bun scripts/graphql-gateway.ts
+# → http://localhost:4000/graphql  (introspectable via Apollo Sandbox)
+# → http://localhost:4000/health
+```
+
+See [`docs/graphql.md`](docs/graphql.md) for the full reference.
+
 ## Current Tasks
 
 - [x] Translate TTL -> JSON-LD schemas to AT Protocol lexicons
 - [x] Deploy initial app view (HappyView)
 - [ ] Create MCP Server
-- [ ] Implement GraphQL API layer (perhaps in (HappyView))
+- [x] Implement GraphQL API layer ([`scripts/graphql-gateway.ts`](/scripts/graphql-gateway.ts))
 - [ ] Deploy App-views to Kubernetes cluster
 - [/] Document extension patterns for custom schemas

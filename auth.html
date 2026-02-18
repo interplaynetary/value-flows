@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quickslice CRUD Test — org.openassociation</title>
+  <style>
+    body { font-family: monospace; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 0.25rem; }
+    button { margin: 0.25rem 0.25rem 0.25rem 0; padding: 0.4rem 0.8rem; cursor: pointer; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    pre {
+      background: #f4f4f4; border: 1px solid #ddd;
+      padding: 0.75rem; border-radius: 4px;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+      min-height: 2rem; max-height: 300px; overflow-y: auto;
+    }
+    .ok  { color: green; }
+    .err { color: red; }
+    input { font-family: monospace; padding: 0.3rem; width: 100%; box-sizing: border-box; margin-top: 0.2rem; }
+    label { display: block; margin-top: 0.5rem; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<h1>Quickslice CRUD — <code>org.openassociation.knowledge.action</code></h1>
+<p id="status">Initialising…</p>
+
+<!-- ── Auth ───────────────────────────────────────────────────────────── -->
+<h2>Auth</h2>
+<label>Handle or DID
+  <input id="handle" value="ruzgarimski.bsky.social" />
+</label>
+<br>
+<button id="btnLogin">Login</button>
+<button id="btnLogout">Logout</button>
+<button id="btnViewer">Who am I?</button>
+<pre id="outViewer">—</pre>
+
+<!-- ── Read (public) ──────────────────────────────────────────────────── -->
+<h2>Read (public — no auth needed)</h2>
+<button id="btnList">List actions (first 5)</button>
+<pre id="outList">—</pre>
+
+<!-- ── Create ─────────────────────────────────────────────────────────── -->
+<h2>Create</h2>
+<label>actionId  <input id="createId"    value="testAction" /></label>
+<label>label     <input id="createLabel" value="Test Action" /></label>
+<br>
+<button id="btnCreate">Create action</button>
+<pre id="outCreate">—</pre>
+
+<!-- ── Update ─────────────────────────────────────────────────────────── -->
+<h2>Update <small>(uses rkey from last Create)</small></h2>
+<label>rkey      <input id="updateRkey"  placeholder="auto-filled after Create" /></label>
+<label>actionId  <input id="updateId"    value="testAction" /></label>
+<label>label     <input id="updateLabel" value="Test Action (updated)" /></label>
+<br>
+<button id="btnUpdate">Update action</button>
+<pre id="outUpdate">—</pre>
+
+<!-- ── Delete ─────────────────────────────────────────────────────────── -->
+<h2>Delete <small>(uses rkey from last Create)</small></h2>
+<label>rkey      <input id="deleteRkey"  placeholder="auto-filled after Create" /></label>
+<br>
+<button id="btnDelete">Delete action</button>
+<pre id="outDelete">—</pre>
+
+<script type="module">
+import { createQuicksliceClient } from '/quickslice-client.esm.js';
+
+const SERVER    = 'https://quickslice-production-d7e0.up.railway.app';
+const CLIENT_ID = 'client_seyQKMo1iQE0KZA8QMps0w';
+const NS        = 'org.openassociation';
+
+// Quickslice field naming: org.openassociation.knowledge.action
+//   → orgOpenassociationKnowledgeAction
+function nsidToField(nsid) {
+  return nsid.split('.').map((s, i) => i === 0 ? s : s[0].toUpperCase() + s.slice(1)).join('');
+}
+function nsidToType(nsid) {
+  return nsid.split('.').map(s => s[0].toUpperCase() + s.slice(1)).join('');
+}
+
+const ACTION_NSID  = `${NS}.knowledge.action`;
+const ACTION_FIELD = nsidToField(ACTION_NSID);  // orgOpenassociationKnowledgeAction
+const ACTION_TYPE  = nsidToType(ACTION_NSID);   // OrgOpenassociationKnowledgeAction
+
+// ── Init client ────────────────────────────────────────────────────────
+const client = await createQuicksliceClient({
+  server: SERVER,
+  clientId: CLIENT_ID,
+  redirectUri: 'http://localhost:3000/callback',
+});
+
+// Handle OAuth callback on page load
+if (window.location.search.includes('code=')) {
+  await client.handleRedirectCallback();
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function show(el, data, isError = false) {
+  el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  el.className = isError ? 'err' : 'ok';
+}
+
+async function refreshStatus() {
+  const loggedIn = await client.isAuthenticated();
+  $('status').textContent = loggedIn
+    ? `✓ Logged in as ${(await client.getUser()).did}`
+    : '✗ Not logged in';
+  $('btnCreate').disabled = !loggedIn;
+  $('btnUpdate').disabled = !loggedIn;
+  $('btnDelete').disabled = !loggedIn;
+  $('btnLogout').disabled = !loggedIn;
+  $('btnLogin').disabled  =  loggedIn;
+}
+
+await refreshStatus();
+
+// ── Auth ───────────────────────────────────────────────────────────────
+$('btnLogin').onclick = async () => {
+  await client.loginWithRedirect({
+    handle: $('handle').value.trim(),
+    redirectUri: 'http://localhost:3000/callback',
+  });
+};
+
+$('btnLogout').onclick = async () => {
+  await client.logout({ reload: true });
+};
+
+$('btnViewer').onclick = async () => {
+  try {
+    const data = await client.query(`{ viewer { did handle } }`);
+    show($('outViewer'), data);
+  } catch (e) {
+    show($('outViewer'), e.message, true);
+  }
+};
+
+// ── Read (public) ──────────────────────────────────────────────────────
+$('btnList').onclick = async () => {
+  try {
+    const data = await client.publicQuery(`
+      {
+        ${ACTION_FIELD}(first: 5, sortBy: [{ field: indexedAt, direction: DESC }]) {
+          totalCount
+          edges {
+            node { uri actionId label inputOutput }
+          }
+        }
+      }
+    `);
+    show($('outList'), data);
+  } catch (e) {
+    show($('outList'), e.message, true);
+  }
+};
+
+// ── Create ─────────────────────────────────────────────────────────────
+$('btnCreate').onclick = async () => {
+  const actionId = $('createId').value.trim();
+  const label    = $('createLabel').value.trim();
+  try {
+    const data = await client.mutate(`
+      mutation {
+        create${ACTION_TYPE}(input: {
+          actionId: ${JSON.stringify(actionId)}
+          label:    ${JSON.stringify(label)}
+        }) {
+          uri
+          actionId
+          label
+        }
+      }
+    `);
+    show($('outCreate'), data);
+    // Auto-fill rkey for Update/Delete
+    const uri  = data?.[`create${ACTION_TYPE}`]?.uri ?? '';
+    const rkey = uri.split('/').pop() ?? '';
+    if (rkey) {
+      $('updateRkey').value = rkey;
+      $('deleteRkey').value = rkey;
+    }
+  } catch (e) {
+    show($('outCreate'), e.message, true);
+  }
+};
+
+// ── Update ─────────────────────────────────────────────────────────────
+$('btnUpdate').onclick = async () => {
+  const rkey     = $('updateRkey').value.trim();
+  const actionId = $('updateId').value.trim();
+  const label    = $('updateLabel').value.trim();
+  if (!rkey) { show($('outUpdate'), 'Fill in rkey first (create a record first)', true); return; }
+  try {
+    const data = await client.mutate(`
+      mutation {
+        update${ACTION_TYPE}(
+          rkey: ${JSON.stringify(rkey)}
+          input: {
+            actionId: ${JSON.stringify(actionId)}
+            label:    ${JSON.stringify(label)}
+          }
+        ) {
+          uri
+          actionId
+          label
+        }
+      }
+    `);
+    show($('outUpdate'), data);
+  } catch (e) {
+    show($('outUpdate'), e.message, true);
+  }
+};
+
+// ── Delete ─────────────────────────────────────────────────────────────
+$('btnDelete').onclick = async () => {
+  const rkey = $('deleteRkey').value.trim();
+  if (!rkey) { show($('outDelete'), 'Fill in rkey first (create a record first)', true); return; }
+  try {
+    const data = await client.mutate(`
+      mutation {
+        delete${ACTION_TYPE}(rkey: ${JSON.stringify(rkey)}) {
+          uri
+        }
+      }
+    `);
+    show($('outDelete'), data);
+    $('updateRkey').value = '';
+    $('deleteRkey').value = '';
+  } catch (e) {
+    show($('outDelete'), e.message, true);
+  }
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.knowledge.recipe",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "Optional instance of a recipe which directly specifies the recipe processes included.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "primaryOutput": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The main type of resource the recipe is intended to produce or deliver."
+          },
+          "recipeIncludes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The collection of processes needed for this recipe."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness.",
+            "maxGraphemes": 640
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          }
+        }
+      }
+    }
+  }
+}

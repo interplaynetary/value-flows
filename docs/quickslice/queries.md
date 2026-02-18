@@ -1,0 +1,231 @@
+Queries
+Quickslice generates a GraphQL query for each Lexicon record type at the /graphql endpoint. Queries are public; no authentication required.
+
+Endpoints: Lexicon queries and mutations use /graphql. Admin operations (labels, reports, settings) use /admin/graphql.
+
+#Relay Connections
+Queries return data in the Relay Connection format:
+
+query {
+xyzStatusphereStatus {
+edges {
+node {
+uri
+status
+createdAt
+}
+cursor
+}
+pageInfo {
+hasNextPage
+endCursor
+}
+totalCount
+}
+}
+edges: Array of results, each containing a node (the record) and cursor (for pagination)
+pageInfo: Pagination metadata
+totalCount: Total number of matching records
+#Built-in Fields
+Every record includes these fields automatically:
+
+Field Description
+uri The AT-URI of the record
+cid Content identifier (hash)
+did Author's decentralized identifier
+collection The Lexicon collection (e.g., app.bsky.feed.post)
+actorHandle Author's handle (e.g., alice.bsky.social)
+indexedAt When Quickslice indexed the record
+The actorHandle field resolves the author's DID to their current handle, useful for display without a separate join:
+
+query {
+xyzStatusphereStatus(first: 10) {
+edges {
+node {
+status
+actorHandle
+}
+}
+}
+}
+#Filtering
+Use the where argument to filter records:
+
+query {
+xyzStatusphereStatus(where: { status: { eq: "🎉" } }) {
+edges {
+node {
+status
+createdAt
+}
+}
+}
+}
+#Filter Operators
+Operator Description Example
+eq Equal to { status: { eq: "👍" } }
+ne Not equal to { status: { ne: "👎" } }
+in In array { status: { in: ["👍", "🎉"] } }
+contains String contains (case-insensitive) { displayName: { contains: "alice" } }
+gt Greater than { createdAt: { gt: "2025-01-01T00:00:00Z" } }
+lt Less than { createdAt: { lt: "2025-06-01T00:00:00Z" } }
+gte Greater than or equal { position: { gte: 1 } }
+lte Less than or equal { position: { lte: 10 } }
+isNull Null check { reply: { isNull: true } }
+#Filtering Ref Fields
+Reference fields (AT-URIs or strong refs pointing to other records) only support isNull. Use it to find records with or without a reference:
+
+query {
+
+# Find root posts (no reply)
+
+appBskyFeedPost(where: { reply: { isNull: true } }) {
+edges {
+node {
+text
+}
+}
+}
+}
+query {
+
+# Find replies only
+
+appBskyFeedPost(where: { reply: { isNull: false } }) {
+edges {
+node {
+text
+}
+}
+}
+}
+#Multiple Conditions
+Combine multiple conditions (they're ANDed together):
+
+query {
+appBskyActorProfile(where: {
+displayName: { contains: "alice" }
+createdAt: { gt: "2025-01-01T00:00:00Z" }
+}) {
+edges {
+node {
+displayName
+description
+}
+}
+}
+}
+#Sorting
+Use sortBy to order results:
+
+query {
+xyzStatusphereStatus(sortBy: [{ field: createdAt, direction: DESC }]) {
+edges {
+node {
+status
+createdAt
+}
+}
+}
+}
+#Multi-Field Sorting
+Sort by multiple fields (applied in order):
+
+query {
+appBskyActorProfile(sortBy: [
+{ field: displayName, direction: ASC }
+{ field: createdAt, direction: DESC }
+]) {
+edges {
+node {
+displayName
+createdAt
+}
+}
+}
+}
+#Pagination
+#Forward Pagination
+Use first to limit results and after to get the next page:
+
+# First page
+
+query {
+xyzStatusphereStatus(first: 10) {
+edges {
+node { status }
+cursor
+}
+pageInfo {
+hasNextPage
+endCursor
+}
+}
+}
+
+# Next page (use endCursor from previous response)
+
+query {
+xyzStatusphereStatus(first: 10, after: "cursor_from_previous_page") {
+edges {
+node { status }
+cursor
+}
+pageInfo {
+hasNextPage
+endCursor
+}
+}
+}
+#Backward Pagination
+Use last and before to paginate backward:
+
+query {
+xyzStatusphereStatus(last: 10, before: "some_cursor") {
+edges {
+node { status }
+cursor
+}
+pageInfo {
+hasPreviousPage
+startCursor
+}
+}
+}
+#PageInfo Fields
+Field Description
+hasNextPage More items exist after this page
+hasPreviousPage More items exist before this page
+startCursor Cursor of the first item
+endCursor Cursor of the last item
+#Complete Example
+Combining filtering, sorting, and pagination:
+
+query GetRecentStatuses($pageSize: Int!, $cursor: String) {
+xyzStatusphereStatus(
+where: { status: { in: ["👍", "🎉", "💙"] } }
+sortBy: [{ field: createdAt, direction: DESC }]
+first: $pageSize
+after: $cursor
+) {
+edges {
+node {
+uri
+status
+createdAt
+}
+cursor
+}
+pageInfo {
+hasNextPage
+endCursor
+}
+totalCount
+}
+}
+Variables:
+
+{
+"pageSize": 20,
+"cursor": null
+}

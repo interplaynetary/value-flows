@@ -1,0 +1,144 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.knowledge.action",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "An action verb defining the kind of flow and its behavior.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "actionId",
+          "label"
+        ],
+        "properties": {
+          "actionId": {
+            "type": "string",
+            "description": "The canonical identifier for this action type",
+            "knownValues": [
+              "accept",
+              "cite",
+              "combine",
+              "consume",
+              "copy",
+              "deliverService",
+              "dropoff",
+              "lower",
+              "modify",
+              "move",
+              "pickup",
+              "produce",
+              "raise",
+              "separate",
+              "transfer",
+              "transferAllRights",
+              "transferCustody",
+              "use",
+              "work"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "The display label defined for the network for the unit of measure, overrides om."
+          },
+          "inputOutput": {
+            "type": "string",
+            "description": "Denotes if a process input or output, or not applicable to a process.",
+            "knownValues": [
+              "input",
+              "notApplicable",
+              "output",
+              "outputInput"
+            ]
+          },
+          "pairsWith": {
+            "type": "string",
+            "description": "The action that usually affects the same resource as a complement in the same flow."
+          },
+          "createResource": {
+            "type": "string",
+            "description": "The action can create an economic resource.",
+            "knownValues": [
+              "notApplicable",
+              "optional",
+              "optionalTo"
+            ]
+          },
+          "eventQuantity": {
+            "type": "string",
+            "description": "The event quantity applicable is resource quantity, effort quantity, or both.",
+            "knownValues": [
+              "both",
+              "effort",
+              "resource"
+            ]
+          },
+          "accountingEffect": {
+            "type": "string",
+            "description": "The increment and/or decrement effect the action will have on the accounting quantity of an inventoried resource.",
+            "knownValues": [
+              "decrement",
+              "decrementIncrement",
+              "increment",
+              "incrementTo"
+            ]
+          },
+          "onhandEffect": {
+            "type": "string",
+            "description": "The increment and/or decrement effect the action will have on the onhand quantity of an inventoried resource.",
+            "knownValues": [
+              "decrement",
+              "decrementIncrement",
+              "increment",
+              "incrementTo"
+            ]
+          },
+          "locationEffect": {
+            "type": "string",
+            "description": "This action can update the current location of an inventoried resource.",
+            "knownValues": [
+              "new",
+              "notApplicable",
+              "update",
+              "updateTo"
+            ]
+          },
+          "containedEffect": {
+            "type": "string",
+            "description": "The contained in resource should be updated or removed.",
+            "knownValues": [
+              "notApplicable",
+              "remove",
+              "update",
+              "updateTo"
+            ]
+          },
+          "accountableEffect": {
+            "type": "string",
+            "description": "The primaryAccountable should be updated to the event receiver, or not.",
+            "knownValues": [
+              "new",
+              "updateTo"
+            ]
+          },
+          "stageEffect": {
+            "type": "string",
+            "description": "The stage of the inventoried resource should be updated, or not.",
+            "knownValues": [
+              "update"
+            ]
+          },
+          "stateEffect": {
+            "type": "string",
+            "description": "The state of the from or to inventoried resource should be updated, or not.",
+            "knownValues": [
+              "update",
+              "updateTo"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
