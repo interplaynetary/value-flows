@@ -5,11 +5,8 @@
 Bun.serve({
   port: 3000,
   routes: {
-    // Serve the test page
-    "/": () =>
-      new Response(Bun.file("auth.html"), {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      }),
+    // Redirect root to /callback so the SDK's default redirect_uri matches
+    "/": () => Response.redirect("http://localhost:3000/callback", 302),
 
     // Serve the SDK ESM bundle so auth.html can import it
     "/quickslice-client.esm.js": () =>
@@ -18,9 +15,9 @@ Bun.serve({
         { headers: { "Content-Type": "application/javascript" } },
       ),
 
-    // OAuth callback: serve the same page so handleRedirectCallback() runs
+    // Primary app URL — also the OAuth callback so the SDK's default redirect_uri matches
     "/callback": () =>
-      new Response(Bun.file("auth.html"), {
+      new Response(Bun.file("statusSphere.html"), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       }),
   },
