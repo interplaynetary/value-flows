@@ -28,6 +28,7 @@
     "zod": "^4.3.6"
   },
   "scripts": {
+    "pipeline": "bun scripts/pipeline.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

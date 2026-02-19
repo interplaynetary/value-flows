@@ -26,6 +26,10 @@ test-results
 drizzle/
 dist/
 *.log
+
+# Generated lexicon TypeScript types
+.src/
+template-app/src/lib/lexicons/
 .DS_Store
 .bun/
 bin/
