@@ -85,8 +85,8 @@ function getArg(name: string): string | null {
 }
 
  const argGlob = Bun.argv.slice(2).find(arg => !arg.startsWith("-") && !arg.endsWith(".ts"));
-const INPUT_GLOB: string = argGlob || "lexicons/vf/**/*.json";
-const OUTPUT_BASE: string = getArg("--output") || "lexicons";
+const INPUT_GLOB: string = argGlob || "lexicons-expanded/**/*.json";
+const OUTPUT_BASE: string = getArg("--output") || "lexicons-expanded";
 
 // ─── load record lexicons ───────────────────────────────────────────────────
 
@@ -300,6 +300,7 @@ console.log("╚═════════════════════�
 console.log(`  Source: ${INPUT_GLOB}`);
 console.log(`  Target: ${OUTPUT_BASE}\n`);
 
+
 let totalQueries = 0;
 let totalFilters = 0;
 
@@ -307,8 +308,8 @@ for (const record of records) {
   const filters = deriveFilters(record.defs.main.record.properties);
   const { nsid, lexicon } = buildListQuery(record);
 
-  console.log(`  ${record.id} → ${nsid}`);
-
+  // 1. List Query
+  console.log(`  ${record.id} → ${nsid} (query)`);
   if (filters.length > 0) {
     for (const f of filters) {
       const tag = f.format || (f.type === "boolean" ? "bool" : "enum");
@@ -328,10 +329,22 @@ for (const record of records) {
 }
 
 console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-console.log(`  Queries derived: ${totalQueries}`);
+console.log(`  List Queries:    ${totalQueries}`);
 console.log(`  Total filter params: ${totalFilters}`);
 console.log(`  Mode: ${DRY_RUN ? "dry run" : "files written"}`);
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+if (!DRY_RUN) {
+  console.log("Running lex gen-api build...");
+  const cmd = `bun x @atproto/lex-cli gen-api --yes ./src ${OUTPUT_BASE}/**/*.json`;
+  const proc = Bun.spawn(["sh", "-c", cmd], {
+    cwd: ROOT,
+    stdout: "inherit", 
+    stderr: "inherit"
+  });
+  await proc.exited;
+  console.log(`\nBuild exited with code ${proc.exitCode}`);
+}
 
 if (INPUT_GLOB.includes("/vf/")) {
   console.log("VF query spec coverage (inverse queries → filter params):\n");

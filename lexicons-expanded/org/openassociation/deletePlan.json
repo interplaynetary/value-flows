@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.deletePlan",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Delete a plan record.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "rkey"
+          ],
+          "properties": {
+            "rkey": {
+              "type": "string"
+            },
+            "swapCommit": {
+              "type": "string",
+              "format": "cid"
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    }
+  }
+}

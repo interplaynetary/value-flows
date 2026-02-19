@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HappyView DPoP Debugger</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 800px;
+        margin: 2rem auto;
+        line-height: 1.5;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+      .success {
+        color: green;
+        font-weight: bold;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HappyView DPoP Debugger (Browser)</h1>
+
+    <div id="step1">
+      <h2>1. Registration</h2>
+      <button id="btnRegister">Register Client & Start Login</button>
+      <pre id="log1"></pre>
+    </div>
+
+    <div id="step2" style="display: none">
+      <h2>2. Token Exchange</h2>
+      <p>Callback received. Exchanging code for token...</p>
+      <pre id="log2"></pre>
+    </div>
+
+    <div id="step3" style="display: none">
+      <h2>3. Admin API Test</h2>
+      <button id="btnTest">Test /admin/admins</button>
+      <pre id="log3"></pre>
+    </div>
+
+    <script type="module">
+      import {
+        SignJWT,
+        generateKeyPair,
+        exportJWK,
+        importJWK,
+      } from "https://cdn.jsdelivr.net/npm/jose@5.2.3/+esm";
+
+      // Config
+      const AIP_URL = "https://aip-production-0438.up.railway.app";
+      const HAPPYVIEW_URL = "https://happyview-production.up.railway.app";
+      const REDIRECT_URI = window.location.origin + "/callback";
+      const STORAGE_KEY = "hv_debug_storage";
+
+      // State
+      let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+      // Helpers
+      function log(elId, msg, isError = false) {
+        const el = document.getElementById(elId);
+        el.textContent += (isError ? "ERROR: " : "") + msg + "\n";
+        if (isError) el.classList.add("error");
+      }
+
+      function clearLog(elId) {
+        document.getElementById(elId).textContent = "";
+      }
+
+      async function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      async function genDpopProof(url, method, accessToken, nonce) {
+        const keyPair = await getDpopKeys(); // helper to re-import keys
+        const u = new URL(url);
+        const htu = u.origin + u.pathname;
+
+        const ath = await crypto.subtle.digest(
+          "SHA-256",
+          new TextEncoder().encode(accessToken),
+        );
+        const athB64 = btoa(String.fromCharCode(...new Uint8Array(ath)))
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+
+        const claims = {
+          htm: method,
+          htu: htu,
+          ath: athB64,
+          jti: crypto.randomUUID(),
+          iat: Math.floor(Date.now() / 1000),
+        };
+        if (nonce) claims.nonce = nonce;
+
+        return new SignJWT(claims)
+          .setProtectedHeader({
+            typ: "dpop+jwt",
+            alg: "ES256",
+            jwk: state.publicJwk,
+          })
+          .sign(keyPair.privateKey);
+      }
+
+      async function getDpopKeys() {
+        if (!state.privateJwk) throw new Error("No keys found");
+        const privateKey = await importJWK(state.privateJwk, "ES256");
+        const publicKey = await importJWK(state.publicJwk, "ES256");
+        return { privateKey, publicKey };
+      }
+
+      // --- Flows ---
+
+      // 1. Register & Redirect
+      document.getElementById("btnRegister").onclick = async () => {
+        clearLog("log1");
+        try {
+          // Generate DPoP Keys
+          log("log1", "Generating DPoP keys...");
+          const { privateKey, publicKey } = await generateKeyPair("ES256", {
+            extractable: true,
+          });
+          state.privateJwk = await exportJWK(privateKey);
+          state.publicJwk = await exportJWK(publicKey);
+
+          // Register Client
+          log("log1", `Registering client at ${AIP_URL}...`);
+          const regRes = await fetch(`${AIP_URL}/oauth/clients/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              redirect_uris: [REDIRECT_URI],
+              grant_types: ["authorization_code"],
+              response_types: ["code"],
+              token_endpoint_auth_method: "none",
+              application_type: "native",
+              client_name: "HappyView Browser Debug",
+              dpop_bound_access_tokens: true,
+            }),
+          });
+
+          if (!regRes.ok) throw new Error(await regRes.text());
+          const client = await regRes.json();
+          state.clientId = client.client_id;
+          log("log1", `Client ID: ${state.clientId}`);
+
+          // Generate PKCE & State
+          state.verifier = generateRandomString(32);
+          state.state = generateRandomString(16);
+          const challenge = await generateCodeChallenge(state.verifier);
+
+          await saveState();
+
+          // Redirect
+          const url = new URL(`${AIP_URL}/oauth/authorize`);
+          url.searchParams.set("response_type", "code");
+          url.searchParams.set("client_id", state.clientId);
+          url.searchParams.set("redirect_uri", REDIRECT_URI);
+          url.searchParams.set("code_challenge", challenge);
+          url.searchParams.set("code_challenge_method", "S256");
+          url.searchParams.set("state", state.state);
+          url.searchParams.set("scope", "atproto");
+
+          log("log1", "Redirecting...");
+          window.location.href = url.toString();
+        } catch (e) {
+          log("log1", e.message, true);
+        }
+      };
+
+      // 2. Handle Callback (on load)
+      if (window.location.pathname === "/callback") {
+        document.getElementById("step1").style.display = "none";
+        document.getElementById("step2").style.display = "block";
+
+        (async () => {
+          const url = new URL(window.location.href);
+          const code = url.searchParams.get("code");
+          if (!code) return log("log2", "No code found", true);
+
+          log("log2", `Got code: ${code}`);
+
+          try {
+            // Token Exchange
+            const tokenUrl = `${AIP_URL}/oauth/token`;
+
+            // Sign DPoP for token endpoint
+            // NOTE: Token endpoint DPoP proof does NOT have 'ath'
+            const keyPair = await getDpopKeys();
+            const dpopProof = await new SignJWT({
+              htm: "POST",
+              htu: tokenUrl,
+              jti: crypto.randomUUID(),
+              iat: Math.floor(Date.now() / 1000),
+            })
+              .setProtectedHeader({
+                typ: "dpop+jwt",
+                alg: "ES256",
+                jwk: state.publicJwk,
+              })
+              .sign(keyPair.privateKey);
+
+            log("log2", "Exchanging token (with DPoP)...");
+            const res = await fetch(tokenUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                DPoP: dpopProof,
+              },
+              body: new URLSearchParams({
+                grant_type: "authorization_code",
+                code: code,
+                redirect_uri: REDIRECT_URI,
+                client_id: state.clientId,
+                code_verifier: state.verifier,
+              }),
+            });
+
+            const body = await res.json();
+            if (!res.ok) throw new Error(JSON.stringify(body));
+
+            state.accessToken = body.access_token;
+            await saveState();
+
+            log("log2", "Token received!", false);
+            log("log2", JSON.stringify(body, null, 2));
+
+            document.getElementById("step3").style.display = "block";
+          } catch (e) {
+            log("log2", e.message, true);
+          }
+        })();
+      }
+
+      // 3. Admin API Test
+      btnTest.onclick = async () => {
+        clearLog("log3");
+        try {
+          const target = `${HAPPYVIEW_URL}/admin/admins`;
+          log("log3", `Fetching ${target}...`);
+
+          // First attempt
+          let proof = await genDpopProof(target, "GET", state.accessToken);
+          let res = await fetch(target, {
+            headers: {
+              Authorization: `DPoP ${state.accessToken}`,
+              DPoP: proof,
+            },
+          });
+
+          log("log3", `Status: ${res.status}`);
+          let body = await res.text();
+          log("log3", `Body: ${body}`);
+
+          const nonce =
+            res.headers.get("dpop-nonce") ||
+            (function () {
+              try {
+                return JSON.parse(body).dpop_nonce;
+              } catch {
+                return null;
+              }
+            })();
+
+          if (res.status === 401 && nonce) {
+            log("log3", `Retrying with nonce: ${nonce}`);
+            proof = await genDpopProof(target, "GET", state.accessToken, nonce);
+            res = await fetch(target, {
+              headers: {
+                Authorization: `DPoP ${state.accessToken}`,
+                DPoP: proof,
+              },
+            });
+            log("log3", `Retry Status: ${res.status}`);
+            log("log3", `Retry Body: ${await res.text()}`);
+          }
+        } catch (e) {
+          log("log3", e.message, true);
+        }
+      };
+
+      // Utils
+      function generateRandomString(length) {
+        const arr = new Uint8Array(length);
+        crypto.getRandomValues(arr);
+        return Array.from(arr, (dec) => dec.toString(16).padStart(2, "0")).join(
+          "",
+        );
+      }
+
+      async function generateCodeChallenge(verifier) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(verifier);
+        const hash = await crypto.subtle.digest("SHA-256", data);
+        return btoa(String.fromCharCode(...new Uint8Array(hash)))
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,134 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.listCommitments",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List commitments. Filterable by: action, inputOf, outputOf, plannedWithin, independentDemandOf, resourceInventoriedAs, provider, receiver, satisfies, finished, stage, clauseOf, reciprocalClauseOf.",
+      "parameters": {
+        "type": "params",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Fetch a single record by AT-URI. Other filters are ignored when set."
+          },
+          "action": {
+            "type": "string",
+            "description": "Filter by action value."
+          },
+          "inputOf": {
+            "type": "string",
+            "description": "Filter by inputOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "outputOf": {
+            "type": "string",
+            "description": "Filter by outputOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "plannedWithin": {
+            "type": "string",
+            "description": "Filter by plannedWithin (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "independentDemandOf": {
+            "type": "string",
+            "description": "Filter by independentDemandOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "resourceInventoriedAs": {
+            "type": "string",
+            "description": "Filter by resourceInventoriedAs (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Filter by provider (DID of referenced agent).",
+            "format": "did"
+          },
+          "receiver": {
+            "type": "string",
+            "description": "Filter by receiver (DID of referenced agent).",
+            "format": "did"
+          },
+          "satisfies": {
+            "type": "string",
+            "description": "Filter where satisfies array contains this AT-URI.",
+            "format": "at-uri"
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "Filter by finished."
+          },
+          "stage": {
+            "type": "string",
+            "description": "Filter by stage (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "clauseOf": {
+            "type": "string",
+            "description": "Filter by clauseOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "reciprocalClauseOf": {
+            "type": "string",
+            "description": "Filter by reciprocalClauseOf (AT-URI of referenced record).",
+            "format": "at-uri"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50,
+            "description": "Maximum number of records to return."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor from a previous response."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "records"
+          ],
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "#recordItem"
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor for next page."
+            }
+          }
+        }
+      }
+    },
+    "recordItem": {
+      "type": "object",
+      "required": [
+        "uri"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI of the record."
+        },
+        "value": {
+          "type": "ref",
+          "ref": "org.openassociation.commitment",
+          "description": "The full record value."
+        }
+      }
+    }
+  }
+}

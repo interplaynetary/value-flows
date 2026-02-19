@@ -1,0 +1,53 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.updateResourceSpecification",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Update a resourceSpecification record.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "rkey",
+            "value"
+          ],
+          "properties": {
+            "rkey": {
+              "type": "string"
+            },
+            "swapCommit": {
+              "type": "string",
+              "format": "cid"
+            },
+            "value": {
+              "type": "ref",
+              "ref": "org.openassociation.resourceSpecification"
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "uri",
+            "cid"
+          ],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "cid": {
+              "type": "string",
+              "format": "cid"
+            }
+          }
+        }
+      }
+    }
+  }
+}

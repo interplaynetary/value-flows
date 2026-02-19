@@ -1,0 +1,139 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.claim",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A claim for a future economic event(s) in reciprocity for an economic event that already occurred.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Defines the kind of flow, such as consume, produce, work, transfer, etc.",
+            "knownValues": [
+              "accept",
+              "cite",
+              "combine",
+              "consume",
+              "copy",
+              "deliverService",
+              "dropoff",
+              "lower",
+              "modify",
+              "move",
+              "pickup",
+              "produce",
+              "raise",
+              "separate",
+              "transfer",
+              "transferAllRights",
+              "transferCustody",
+              "use",
+              "work"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent by whom the intended, committed, or actual economic event is initiated."
+          },
+          "receiver": {
+            "type": "string",
+            "format": "did",
+            "description": "The economic agent whom the intended, committed, or actual economic event is for."
+          },
+          "triggeredBy": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "References an economic event that implied the claim, often based on a prior agreement."
+          },
+          "due": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date, and time if desired, something is expected to be complete."
+          },
+          "resourceQuantity": {
+            "type": "ref",
+            "ref": "#measure",
+            "description": "The amount and unit of the economic resource counted or inventoried."
+          },
+          "effortQuantity": {
+            "type": "ref",
+            "ref": "#measure",
+            "description": "The amount and unit of the work or use or citation effort-based action. This is often expressed with a time unit, but also could be cycle counts or other measures of effort or usefulness."
+          },
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date, and time if desired, the information was agreed to or recorded."
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "The commitment or intent or process is complete or not.  This is irrespective of if the original goal has been met, and indicates simply that no more will be done.  Default false."
+          },
+          "resourceClassifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
+          },
+          "resourceConformsTo": {
+            "type": "ref",
+            "ref": "#resourceSpecification",
+            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not."
+          }
+        }
+      }
+    },
+    "measure": {
+      "type": "object",
+      "description": "A quantity expressed as a numeric value with a unit of measure. AT Protocol does not support floats, so the value is represented as numerator/denominator integers.",
+      "required": [
+        "hasNumericalValue"
+      ],
+      "properties": {
+        "hasNumericalValue": {
+          "type": "integer",
+          "description": "The numeric value (numerator)."
+        },
+        "hasDenominator": {
+          "type": "integer",
+          "description": "The denominator for fractional values. Default 1 if omitted."
+        },
+        "unitLabel": {
+          "type": "string",
+          "description": "The display label of the unit of measure (e.g. 'kilogram', 'hour')."
+        },
+        "unitSymbol": {
+          "type": "string",
+          "description": "The display symbol of the unit of measure (e.g. 'kg', 'h')."
+        }
+      }
+    },
+    "resourceSpecification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the resource specification."
+        },
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI link to the ResourceSpecification record."
+        }
+      }
+    }
+  }
+}

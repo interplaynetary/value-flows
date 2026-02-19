@@ -60,10 +60,14 @@ async function generateDpopProof(
 ): Promise<string> {
   if (!privateKey || !publicJwk) throw new Error("Not logged in. Run: bun hv.ts login");
 
-  const targetUrl = url || `${AIP_URL}/oauth/userinfo`;
+  const fullUrl = url || `${AIP_URL}/oauth/userinfo`;
+  const urlObj = new URL(fullUrl);
+  // RFC 9449: htu must not contain query or fragment
+  const htu = urlObj.origin + urlObj.pathname;
+
   const claims: Record<string, any> = {
     htm: method,
-    htu: targetUrl,
+    htu,
   };
   if (AIP_TOKEN) {
     claims.ath = createHash("sha256").update(AIP_TOKEN).digest("base64url");
@@ -71,6 +75,9 @@ async function generateDpopProof(
   if (currentNonce) {
     claims.nonce = currentNonce;
   }
+
+  // Debug logging
+  console.log(`  [DPoP] Signing: htu=${htu} method=${method} nonce=${currentNonce || "(none)"}`);
 
   return new SignJWT(claims)
     .setProtectedHeader({ typ: "dpop+jwt", alg: "ES256", jwk: publicJwk })
@@ -83,9 +90,23 @@ async function authFetch(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  if (!privateKey) throw new Error("Not logged in. Run: bun hv.ts login");
+  if (!AIP_TOKEN) throw new Error("Not logged in. Run: bun hv.ts login");
 
-  let dpopProof = await generateDpopProof();
+  // Fallback to Bearer auth if DPoP keys are missing
+  if (!privateKey) {
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...((options.headers as Record<string, string>) || {}),
+        Authorization: `Bearer ${AIP_TOKEN}`,
+      },
+    });
+  }
+
+  const method = options.method || "GET";
+  
+  // First attempt
+  let dpopProof = await generateDpopProof(method, url);
   let res = await fetch(url, {
     ...options,
     headers: {
@@ -98,11 +119,20 @@ async function authFetch(
   // Handle nonce retry
   if (res.status === 401) {
     const body = await res.text();
-    try {
-      const parsed = JSON.parse(body);
-      if (parsed.dpop_nonce) {
-        currentNonce = parsed.dpop_nonce;
-        dpopProof = await generateDpopProof();
+    let nonce: string | undefined = res.headers.get("dpop-nonce") || undefined;
+
+    if (!nonce) {
+        try {
+            const parsed = JSON.parse(body);
+            if (parsed.dpop_nonce) nonce = parsed.dpop_nonce;
+        } catch {}
+    }
+
+    if (nonce) {
+        // Update global nonce and retry
+        currentNonce = nonce;
+        console.log(`  [DPoP] Retrying with new nonce: ${nonce}`);
+        dpopProof = await generateDpopProof(method, url);
         res = await fetch(url, {
           ...options,
           headers: {
@@ -111,8 +141,14 @@ async function authFetch(
             DPoP: dpopProof,
           },
         });
-      }
-    } catch {}
+    } else {
+        // Restore body if no nonce found so caller can read it
+        return new Response(body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers: res.headers
+        });
+    }
   }
 
   const newNonce = res.headers.get("dpop-nonce");
@@ -139,7 +175,7 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
     .replace(/=+$/, "");
 }
 
-async function updateEnvFile(token: string, jwk: any) {
+async function updateEnvFile(token: string, jwk?: any) {
   const envPath = `${import.meta.dir}/.env`;
   let content: string;
   try {
@@ -148,7 +184,7 @@ async function updateEnvFile(token: string, jwk: any) {
     content = "";
   }
 
-  const jwkStr = JSON.stringify(jwk);
+  const jwkStr = jwk ? JSON.stringify(jwk) : "";
 
   if (content.includes("AIP_TOKEN=")) {
     content = content.replace(/^AIP_TOKEN=.*$/m, `AIP_TOKEN=${token}`);
@@ -157,8 +193,12 @@ async function updateEnvFile(token: string, jwk: any) {
   }
 
   if (content.includes("DPOP_JWK=")) {
-    content = content.replace(/^DPOP_JWK=.*$/m, `DPOP_JWK=${jwkStr}`);
-  } else {
+    if (jwk) {
+        content = content.replace(/^DPOP_JWK=.*$/m, `DPOP_JWK=${jwkStr}`);
+    } else {
+        content = content.replace(/^DPOP_JWK=.*$/m, ""); // Remove line
+    }
+  } else if (jwk) {
     content += `\nDPOP_JWK=${jwkStr}`;
   }
 
@@ -367,13 +407,6 @@ async function login() {
     }
   }
 
-  if (!tokenRes.ok) {
-    const text = await tokenRes.text();
-    console.error(`Token exchange failed (${tokenRes.status}): ${text}`);
-    server.stop();
-    process.exit(1);
-  }
-
   const tokenData = (await tokenRes.json()) as {
     access_token: string;
     sub?: string;
@@ -479,7 +512,7 @@ function inferTargetCollection(nsid: string, recordNsids: Set<string>): string |
 // --- Commands ---
 
 async function requireAuth() {
-  if (!privateKey || !AIP_TOKEN) {
+  if (!AIP_TOKEN) {
     console.error("Not logged in. Run: bun hv.ts login");
     process.exit(1);
   }
@@ -641,6 +674,7 @@ async function cmdLexiconsDeleteAll() {
 
 async function cmdLexiconsSync(opts: { backfill?: boolean; only?: string } = {}) {
   await requireAuth();
+  await cmdWhoami(); // Verify checking auth works
   console.log("=== Sync: delete all existing lexicons, then upload fresh ===\n");
   await cmdLexiconsDeleteAll();
   console.log();

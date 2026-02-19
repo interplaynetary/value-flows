@@ -1,0 +1,45 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.createClaim",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Create a claim record.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "ref",
+              "ref": "org.openassociation.claim"
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "uri",
+            "cid"
+          ],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "cid": {
+              "type": "string",
+              "format": "cid"
+            }
+          }
+        }
+      }
+    }
+  }
+}

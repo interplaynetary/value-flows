@@ -89,26 +89,11 @@
     "location": {
       "type": "object",
       "properties": {
-        "lat": {
-          "type": "string",
-          "description": "WGS84 latitude (decimal degrees)."
-        },
-        "long": {
-          "type": "string",
-          "description": "WGS84 longitude (decimal degrees)."
-        },
-        "alt": {
-          "type": "string",
-          "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)."
-        },
-        "mappableAddress": {
-          "type": "string",
-          "description": "A textual address that can be mapped using mapping software."
-        },
-        "name": {
-          "type": "string",
-          "description": "An informal or formal textual identifier for the location."
-        }
+        "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
+        "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
+        "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
+        "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
+        "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
       }
     }
   }

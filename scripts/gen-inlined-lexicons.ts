@@ -15,7 +15,7 @@
 import { readdir, mkdir } from "node:fs/promises";
 import path from "node:path";
 
-const INPUT_DIR = path.resolve(import.meta.dir, "../lexicons-flat/openassociation");
+const INPUT_DIR = path.resolve(import.meta.dir, "../lexicons/openassociation");
 const OUTPUT_DIR = path.resolve(import.meta.dir, "../lexicons-inlined/openassociation");
 const DEFS_ID = "org.openassociation.defs";
 const MEASURE_REF = `${DEFS_ID}#measure`;

@@ -1,0 +1,77 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.agent",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A functional structure, formal or informal, which can include people and/or other organizations, and has its own agency.  Something called a group is an Organization in Valueflows if it has agency as the group.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "agentType": {
+            "type": "string",
+            "description": "The type of agent.",
+            "enum": [
+              "person",
+              "organization",
+              "ecologicalAgent"
+            ]
+          },
+          "primaryLocation": {
+            "type": "ref",
+            "ref": "#location",
+            "description": "The main place an agent is located, often an address where activities occur and mail can be sent."
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "description": "The uri to an image relevant to the entity, such as a logo, avatar, photo, diagram, etc."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness.",
+            "maxGraphemes": 640
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          },
+          "classifiedAs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
+          }
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "string",
+          "description": "WGS84 latitude (decimal degrees)."
+        },
+        "long": {
+          "type": "string",
+          "description": "WGS84 longitude (decimal degrees)."
+        },
+        "alt": {
+          "type": "string",
+          "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)."
+        },
+        "mappableAddress": {
+          "type": "string",
+          "description": "A textual address that can be mapped using mapping software."
+        },
+        "name": {
+          "type": "string",
+          "description": "An informal or formal textual identifier for the location."
+        }
+      }
+    }
+  }
+}

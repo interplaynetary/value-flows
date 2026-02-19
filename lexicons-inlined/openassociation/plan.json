@@ -1,0 +1,52 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.plan",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A logical collection of processes, with optional connected agreements, that constitute a body of scheduled work with defined deliverable(s).",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "properties": {
+          "planIncludes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The processes and and non-process commitments/intents that constitute the plan."
+          },
+          "hasIndependentDemand": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "at-uri"
+            },
+            "description": "The commitments and/or intents which this plan was created to deliver."
+          },
+          "due": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date, and time if desired, something is expected to be complete."
+          },
+          "created": {
+            "type": "string",
+            "format": "datetime",
+            "description": "The date, and time if desired, the information was agreed to or recorded."
+          },
+          "name": {
+            "type": "string",
+            "description": "An informal or formal textual identifier for an object. Does not imply uniqueness.",
+            "maxGraphemes": 640
+          },
+          "note": {
+            "type": "string",
+            "description": "Any useful textual information related to the item.",
+            "maxGraphemes": 10000
+          }
+        }
+      }
+    }
+  }
+}
