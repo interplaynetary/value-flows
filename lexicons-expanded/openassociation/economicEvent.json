@@ -111,15 +111,9 @@
             "description": "The date, and time if desired, the information was agreed to or recorded."
           },
           "toLocation": {
-            "type": "object",
-            "description": "The new location of the receiver resource.",
-            "properties": {
-              "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
-              "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
-              "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
-              "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
-              "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
-            }
+            "type": "ref",
+            "ref": "#location",
+            "description": "The new location of the receiver resource."
           },
           "image": {
             "type": "string",
@@ -155,19 +149,9 @@
             "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
           },
           "resourceConformsTo": {
-            "type": "object",
-            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not.",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Display name of the resource specification."
-              },
-              "uri": {
-                "type": "string",
-                "format": "at-uri",
-                "description": "AT-URI link to the ResourceSpecification record."
-              }
-            }
+            "type": "ref",
+            "ref": "#resourceSpecification",
+            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not."
           },
           "state": {
             "type": "string",
@@ -208,6 +192,30 @@
         "unitSymbol": {
           "type": "string",
           "description": "The display symbol of the unit of measure (e.g. 'kg', 'h')."
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
+        "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
+        "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
+        "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
+        "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
+      }
+    },
+    "resourceSpecification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the resource specification."
+        },
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI link to the ResourceSpecification record."
         }
       }
     }

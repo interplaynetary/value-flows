@@ -256,19 +256,8 @@ function buildListQuery(record: RecordLexicon): { nsid: string; lexicon: object 
                 records: {
                   type: "array",
                   items: {
-                    type: "object",
-                    required: ["uri"],
-                    properties: {
-                      uri: {
-                        type: "string",
-                        format: "at-uri",
-                        description: "AT-URI of the record.",
-                      },
-                      value: {
-                        type: "unknown",
-                        description: "The full record value.",
-                      },
-                    },
+                    type: "ref",
+                    ref: "#recordItem",
                   },
                 },
                 cursor: {
@@ -276,6 +265,22 @@ function buildListQuery(record: RecordLexicon): { nsid: string; lexicon: object 
                   description: "Pagination cursor for next page.",
                 },
               },
+            },
+          },
+        },
+        recordItem: {
+          type: "object",
+          required: ["uri"],
+          properties: {
+            uri: {
+              type: "string",
+              format: "at-uri",
+              description: "AT-URI of the record.",
+            },
+            value: {
+              type: "ref",
+              ref: record.id,
+              description: "The full record value.",
             },
           },
         },

@@ -1,0 +1,76 @@
+{
+  "lexicon": 1,
+  "id": "org.openassociation.listAgreementBundles",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List agreementBundles. Filterable by: bundles.",
+      "parameters": {
+        "type": "params",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "Fetch a single record by AT-URI. Other filters are ignored when set."
+          },
+          "bundles": {
+            "type": "string",
+            "description": "Filter where bundles array contains this AT-URI.",
+            "format": "at-uri"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50,
+            "description": "Maximum number of records to return."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor from a previous response."
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "records"
+          ],
+          "properties": {
+            "records": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "#recordItem"
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor for next page."
+            }
+          }
+        }
+      }
+    },
+    "recordItem": {
+      "type": "object",
+      "required": [
+        "uri"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI of the record."
+        },
+        "value": {
+          "type": "ref",
+          "ref": "org.openassociation.agreementBundle",
+          "description": "The full record value."
+        }
+      }
+    }
+  }
+}

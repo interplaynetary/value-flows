@@ -19,15 +19,9 @@
             ]
           },
           "primaryLocation": {
-            "type": "object",
-            "description": "The main place an agent is located, often an address where activities occur and mail can be sent.",
-            "properties": {
-              "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
-              "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
-              "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
-              "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
-              "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
-            }
+            "type": "ref",
+            "ref": "#location",
+            "description": "The main place an agent is located, often an address where activities occur and mail can be sent."
           },
           "image": {
             "type": "string",
@@ -51,6 +45,31 @@
             },
             "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
           }
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "string",
+          "description": "WGS84 latitude (decimal degrees)."
+        },
+        "long": {
+          "type": "string",
+          "description": "WGS84 longitude (decimal degrees)."
+        },
+        "alt": {
+          "type": "string",
+          "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)."
+        },
+        "mappableAddress": {
+          "type": "string",
+          "description": "A textual address that can be mapped using mapping software."
+        },
+        "name": {
+          "type": "string",
+          "description": "An informal or formal textual identifier for the location."
         }
       }
     }

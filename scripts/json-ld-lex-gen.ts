@@ -34,6 +34,32 @@ const ROOT: string = join(import.meta.dir, "..");
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+function resolveSchemaRef(ref: string, schema: any): any {
+  if (!ref || !ref.startsWith("#/")) return null;
+  const parts = ref.split("/").slice(1);
+  let curr = schema;
+  for (let p of parts) {
+    p = p.replace(/~1/g, "/").replace(/~0/g, "~");
+    curr = curr?.[p];
+  }
+  return curr;
+}
+
+function gatherProperties(node: any, schema: any): Record<string, any> {
+  const props: Record<string, any> = {};
+  if (node.$ref) {
+    const resolved = resolveSchemaRef(node.$ref, schema);
+    if (resolved) Object.assign(props, gatherProperties(resolved, schema));
+  }
+  if (node.allOf) {
+    node.allOf.forEach((sub: any) => Object.assign(props, gatherProperties(sub, schema)));
+  }
+  if (node.properties) {
+    Object.assign(props, node.properties);
+  }
+  return props;
+}
+
 /**
  * Attempts to find properties for a term/IRI in a schema.
  */
@@ -71,36 +97,109 @@ function findSchemaProperties(term: string, schema: any): Record<string, any> {
                      findDeep(schema, term);
 
   if (definition) {
-    const resolveRef = (ref: string): any => {
-      if (!ref.startsWith("#/")) return null;
-      const parts = ref.split("/").slice(1);
-      let curr = schema;
-      for (let p of parts) {
-        p = p.replace(/~1/g, "/").replace(/~0/g, "~");
-        curr = curr?.[p];
-      }
-      return curr;
-    };
-
-    const getProps = (d: any): Record<string, any> => {
-      let p: Record<string, any> = {};
-      if (d.$ref) {
-        const refD = resolveRef(d.$ref);
-        if (refD) Object.assign(p, getProps(refD));
-      }
-      if (d.properties) Object.assign(p, d.properties);
-      if (d.allOf) {
-        for (const sub of d.allOf) {
-          Object.assign(p, getProps(sub));
-        }
-      }
-      return p;
-    };
-
-    return getProps(definition);
+    return gatherProperties(definition, schema);
   }
 
   return {};
+}
+
+function processSchemaProperty(
+  name: string,
+  rawProp: any,
+  defs: Record<string, any>,
+  schema: any
+): any {
+  // Resolve ref if present to get structural info
+  let struct = rawProp;
+  let resolvedRef = rawProp.$ref ? resolveSchemaRef(rawProp.$ref, schema) : null;
+  if (resolvedRef) struct = resolvedRef;
+
+  // Combine with allOf if present (simple merge)
+  if (struct.allOf) {
+    struct = { ...struct };
+    struct.allOf.forEach((sub: any) => {
+        const r = sub.$ref ? resolveSchemaRef(sub.$ref, schema) : sub;
+        if (r) Object.assign(struct, r);
+    });
+  }
+
+  let type = "string";
+  if (struct.type === "integer" || struct.type === "number") type = "integer";
+  else if (struct.type === "boolean") type = "boolean";
+  else if (struct.type === "array") type = "array";
+  else if (struct.type === "object" || struct.properties) type = "object";
+
+  let format: string | undefined;
+  if (struct.format === "uri") format = "uri";
+  else if (struct.format === "date-time") format = "datetime";
+
+  // Handle Object: extract to defs
+  if (type === "object") {
+    // Generate a definition name. 
+    // Prefer the ref name (e.g. Location), fallback to property name (e.g. primaryLocation)
+    let defName = name;
+    if (rawProp.$ref) {
+      defName = rawProp.$ref.split("/").pop();
+    } else if (struct.title) {
+        defName = struct.title.replace(/ /g, "");
+    }
+
+    // Ensure defName is valid for Lexicon (first char alpha)
+    defName = defName.replace(/[^a-zA-Z0-9]/g, "");
+    if (/^[^a-zA-Z]/.test(defName)) defName = "Type" + defName;
+
+    // Detect recursion or existing def
+    if (!defs[defName]) {
+      // Placeholder to prevent infinite recursion
+      defs[defName] = { type: "object", properties: {} };
+
+      const props: Record<string, any> = {};
+      const childProps = gatherProperties(struct, schema);
+      
+      for (const [pName, pVal] of Object.entries(childProps)) {
+         if (pName.startsWith("@")) continue;
+         const safeName = pName.replace(/[^a-zA-Z0-9]/g, "");
+         props[safeName] = processSchemaProperty(safeName, pVal, defs, schema);
+      }
+      
+      defs[defName] = { 
+          type: "object", 
+          properties: props,
+          description: struct.description || rawProp.description
+      };
+      if (struct.required) defs[defName].required = struct.required;
+    }
+
+    return { 
+        type: "ref", 
+        ref: `#${defName}`,
+        description: rawProp.description || struct.description
+    };
+  }
+
+  // Handle Array
+  if (type === "array") {
+      const items = processSchemaProperty(name + "Item", struct.items || {}, defs, schema);
+      return {
+          type: "array",
+          items: items,
+          description: rawProp.description || struct.description
+      };
+  }
+
+  // Handle Primitives
+  const prop: any = { 
+      type, 
+      description: rawProp.description || struct.description
+  };
+  if (format) prop.format = format;
+  
+  if (type === "unknown") {
+      // Logic for unknown if we couldn't resolve type?
+      // Default to string if unsure, or unknown for flexibility
+  }
+
+  return prop;
 }
 
 // ─── main ──────────────────────────────────────────────────────────────────
@@ -182,36 +281,20 @@ async function main() {
 
     console.log(`  Processing ${nsid} (${term} ← ${iri})`);
     
-    let properties: Record<string, any> = {};
+    // Accumulate definitions for this lexicon
+    const defs: Record<string, any> = {};
+    const properties: Record<string, any> = {};
+
     if (schema) {
       const rawProps = findSchemaProperties(term, schema);
       for (const [pName, pVal] of Object.entries(rawProps)) {
         if (pName.startsWith("@")) continue;
         const safeName = pName.replace(/[^a-zA-Z0-9]/g, "");
-
-        let type = "string";
-        let format: string | undefined;
-
-        if (pVal.type === "integer") type = "integer";
-        else if (pVal.type === "number") type = "integer";
-        else if (pVal.type === "boolean") type = "boolean";
-        else if (pVal.type === "array") type = "array";
-        else if (pVal.type === "object") type = "unknown";
-
-        if (pVal.format === "uri") format = "uri";
-        else if (pVal.format === "date-time") format = "datetime";
-
-        const prop: any = { type, description: pVal.description || `The ${pName} property` };
-        if (format) prop.format = format;
-        if (type === "array" && pVal.items) {
-           prop.items = { type: "string" }; 
-        }
-
-        properties[safeName] = prop;
+        properties[safeName] = processSchemaProperty(safeName, pVal, defs, schema);
       }
     }
 
-    const lexicon = {
+    const lexicon: any = {
       lexicon: 1,
       id: nsid,
       defs: {
@@ -228,14 +311,15 @@ async function main() {
               ...properties
             }
           }
-        }
+        },
+        ...defs
       }
     };
 
     const outPath = join(ROOT, OUTPUT_BASE, ...nsid.split(".")) + ".json";
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(lexicon, null, 2) + "\n");
-    console.log(`    Wrote ${outPath} (${Object.keys(properties).length} derived props)`);
+    console.log(`    Wrote ${outPath} (${Object.keys(properties).length} derived props, ${Object.keys(defs).length} defs)`);
   }
 
   // 5. Report unmapped potential types

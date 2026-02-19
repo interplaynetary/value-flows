@@ -11,9 +11,9 @@ ls scripts/
 https://interplaynetary.github.io/protocols
 ```
 
-## HappyView CLI (`scripts/hv.ts`)
+## HappyView CLI (`scripts/happyview.ts`)
 
-`hv.ts` is the admin CLI for managing lexicons and records on a HappyView instance. It handles OAuth login (DPoP), lexicon lifecycle, backfill jobs, and XRPC querying.
+`happyview.ts` is the admin CLI for managing lexicons and records on a HappyView instance. It handles OAuth login (DPoP), lexicon lifecycle, backfill jobs, and XRPC querying.
 
 ### Setup
 
@@ -28,34 +28,34 @@ MY_DID=did:plc:yourDID   # optional, used as login hint
 Then log in — this opens a browser for OAuth and saves your token to `.env`:
 
 ```bash
-bun scripts/hv.ts login
+bun scripts/happyview.ts login
 ```
 
 ### Lexicon management
 
 ```bash
 # List all lexicons currently registered on HappyView
-bun scripts/hv.ts lexicons
+bun scripts/happyview.ts lexicons
 
 # Upload all lexicons from lexicons/ (auto-infers target_collection for queries/procedures)
-bun scripts/hv.ts lexicons upload
+bun scripts/happyview.ts lexicons upload
 
 # Upload only a specific namespace
-bun scripts/hv.ts lexicons upload --only vf
+bun scripts/happyview.ts lexicons upload --only vf
 
 # Upload and trigger historical backfill for record lexicons
-bun scripts/hv.ts lexicons upload --backfill
+bun scripts/happyview.ts lexicons upload --backfill
 
 # Delete a single lexicon
-bun scripts/hv.ts lexicons delete vf.observation.person
+bun scripts/happyview.ts lexicons delete vf.observation.person
 
 # Delete all registered lexicons
-bun scripts/hv.ts lexicons delete-all
+bun scripts/happyview.ts lexicons delete-all
 
 # Full redeploy: delete all, then upload fresh (most common workflow)
-bun scripts/hv.ts lexicons sync
-bun scripts/hv.ts lexicons sync --only vf
-bun scripts/hv.ts lexicons sync --backfill
+bun scripts/happyview.ts lexicons sync
+bun scripts/happyview.ts lexicons sync --only vf
+bun scripts/happyview.ts lexicons sync --backfill
 ```
 
 `upload` and `sync` automatically infer `target_collection` for query and procedure lexicons by stripping verb prefixes (`list`, `create`, `update`, …) and singularizing. Records are always uploaded before queries/procedures.
@@ -64,32 +64,32 @@ bun scripts/hv.ts lexicons sync --backfill
 
 ```bash
 # Hit a single XRPC query endpoint
-bun scripts/hv.ts query vf.observation.listPersons
-bun scripts/hv.ts query vf.observation.listPersons --did did:plc:abc123
-bun scripts/hv.ts query vf.observation.listPersons --limit 5
+bun scripts/happyview.ts query vf.observation.listPersons
+bun scripts/happyview.ts query vf.observation.listPersons --did did:plc:abc123
+bun scripts/happyview.ts query vf.observation.listPersons --limit 5
 
 # Hit all registered query endpoints (shows record counts)
-bun scripts/hv.ts query-all
+bun scripts/happyview.ts query-all
 ```
 
 ### Other commands
 
 ```bash
 # Check auth status and list admins
-bun scripts/hv.ts whoami
+bun scripts/happyview.ts whoami
 
 # Record counts by collection
-bun scripts/hv.ts stats
+bun scripts/happyview.ts stats
 
 # Admin management
-bun scripts/hv.ts admins
-bun scripts/hv.ts admins add did:plc:newadmin
-bun scripts/hv.ts admins remove <uuid>
+bun scripts/happyview.ts admins
+bun scripts/happyview.ts admins add did:plc:newadmin
+bun scripts/happyview.ts admins remove <uuid>
 
 # Backfill jobs
-bun scripts/hv.ts backfill
-bun scripts/hv.ts backfill start
-bun scripts/hv.ts backfill start vf.observation.person
+bun scripts/happyview.ts backfill
+bun scripts/happyview.ts backfill start
+bun scripts/happyview.ts backfill start vf.observation.person
 ```
 
 ## XRPC API

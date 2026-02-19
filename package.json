@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@apollo/server": "^5.4.0",
+    "@atproto/lex": "^0.0.16",
     "@frogcat/ttl2jsonld": "^0.0.10",
     "@types/jsonld": "^1.5.15",
     "crypto": "^1.0.1",

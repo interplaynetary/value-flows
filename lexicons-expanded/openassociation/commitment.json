@@ -132,19 +132,9 @@
             "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
           },
           "resourceConformsTo": {
-            "type": "object",
-            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not.",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Display name of the resource specification."
-              },
-              "uri": {
-                "type": "string",
-                "format": "at-uri",
-                "description": "AT-URI link to the ResourceSpecification record."
-              }
-            }
+            "type": "ref",
+            "ref": "#resourceSpecification",
+            "description": "The lowest level resource specification or definition of an existing or potential economic resource, whether one will ever be instantiated or not."
           },
           "stage": {
             "type": "string",
@@ -190,6 +180,20 @@
         "unitSymbol": {
           "type": "string",
           "description": "The display symbol of the unit of measure (e.g. 'kg', 'h')."
+        }
+      }
+    },
+    "resourceSpecification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the resource specification."
+        },
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI link to the ResourceSpecification record."
         }
       }
     }

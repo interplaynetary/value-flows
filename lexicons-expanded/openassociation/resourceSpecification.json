@@ -41,32 +41,14 @@
             "description": "Defines if any resource of that type can be freely substituted for any other resource of that type when used, consumed, traded, etc."
           },
           "defaultUnitOfEffort": {
-            "type": "object",
-            "description": "The default unit used for use or work.",
-            "properties": {
-              "unitLabel": {
-                "type": "string",
-                "description": "The display label of the unit (e.g. 'kilogram', 'hour')."
-              },
-              "unitSymbol": {
-                "type": "string",
-                "description": "The display symbol of the unit (e.g. 'kg', 'h')."
-              }
-            }
+            "type": "ref",
+            "ref": "#unitOfMeasure",
+            "description": "The default unit used for use or work."
           },
           "defaultUnitOfResource": {
-            "type": "object",
-            "description": "The default unit used for the resource itself.",
-            "properties": {
-              "unitLabel": {
-                "type": "string",
-                "description": "The display label of the unit (e.g. 'kilogram', 'hour')."
-              },
-              "unitSymbol": {
-                "type": "string",
-                "description": "The display symbol of the unit (e.g. 'kg', 'h')."
-              }
-            }
+            "type": "ref",
+            "ref": "#unitOfMeasure",
+            "description": "The default unit used for the resource itself."
           },
           "resourceClassifiedAs": {
             "type": "array",
@@ -75,6 +57,19 @@
             },
             "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or can be one or more string classifications such as tags."
           }
+        }
+      }
+    },
+    "unitOfMeasure": {
+      "type": "object",
+      "properties": {
+        "unitLabel": {
+          "type": "string",
+          "description": "The display label of the unit (e.g. 'kilogram', 'hour')."
+        },
+        "unitSymbol": {
+          "type": "string",
+          "description": "The display symbol of the unit (e.g. 'kg', 'h')."
         }
       }
     }

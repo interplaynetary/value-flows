@@ -41,15 +41,9 @@
             "description": "The current amount and unit of the economic resource which is under direct control of the agent.  It may be more or less than the accounting quantity. This can be either stored or derived from economic events affecting the resource."
           },
           "currentLocation": {
-            "type": "object",
-            "description": "The current physical location of an economic resource.",
-            "properties": {
-              "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
-              "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
-              "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
-              "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
-              "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
-            }
+            "type": "ref",
+            "ref": "#location",
+            "description": "The current physical location of an economic resource."
           },
           "currentVirtualLocation": {
             "type": "string",
@@ -88,26 +82,14 @@
             "description": "Any identifier used to track a singular resource, such as a serial number or VIN."
           },
           "ofBatchLot": {
-            "type": "object",
-            "description": "The batch lot record of this resource, if it is a batch or lot resource.",
-            "properties": {
-              "batchLotCode": { "type": "string", "description": "The code or identifier for this batch or lot." },
-              "expirationDate": { "type": "string", "format": "datetime", "description": "The date after which the resource should no longer be used or consumed." }
-            }
+            "type": "ref",
+            "ref": "#batchLot",
+            "description": "The batch lot record of this resource, if it is a batch or lot resource."
           },
           "unitOfEffort": {
-            "type": "object",
-            "description": "The unit used for use or work or sometimes cite actions.",
-            "properties": {
-              "unitLabel": {
-                "type": "string",
-                "description": "The display label of the unit (e.g. 'kilogram', 'hour')."
-              },
-              "unitSymbol": {
-                "type": "string",
-                "description": "The display symbol of the unit (e.g. 'kg', 'h')."
-              }
-            }
+            "type": "ref",
+            "ref": "#unitOfMeasure",
+            "description": "The unit used for use or work or sometimes cite actions."
           },
           "classifiedAs": {
             "type": "array",
@@ -117,19 +99,9 @@
             "description": "References one or more uri's for a concept in a common taxonomy or other classification scheme for purposes of categorization or grouping; or it can be one or more string classifications such as tags."
           },
           "conformsTo": {
-            "type": "object",
-            "description": "The primary resource specification or definition of an existing or potential economic resource.",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Display name of the resource specification."
-              },
-              "uri": {
-                "type": "string",
-                "format": "at-uri",
-                "description": "AT-URI link to the ResourceSpecification record."
-              }
-            }
+            "type": "ref",
+            "ref": "#resourceSpecification",
+            "description": "The primary resource specification or definition of an existing or potential economic resource."
           },
           "stage": {
             "type": "string",
@@ -165,6 +137,50 @@
         "unitSymbol": {
           "type": "string",
           "description": "The display symbol of the unit of measure (e.g. 'kg', 'h')."
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "string", "description": "WGS84 latitude (decimal degrees)." },
+        "long": { "type": "string", "description": "WGS84 longitude (decimal degrees)." },
+        "alt": { "type": "string", "description": "WGS84 altitude (decimal meters above the local reference ellipsoid)." },
+        "mappableAddress": { "type": "string", "description": "A textual address that can be mapped using mapping software." },
+        "name": { "type": "string", "description": "An informal or formal textual identifier for the location." }
+      }
+    },
+    "batchLot": {
+      "type": "object",
+      "properties": {
+        "batchLotCode": { "type": "string", "description": "The code or identifier for this batch or lot." },
+        "expirationDate": { "type": "string", "format": "datetime", "description": "The date after which the resource should no longer be used or consumed." }
+      }
+    },
+    "unitOfMeasure": {
+      "type": "object",
+      "properties": {
+        "unitLabel": {
+          "type": "string",
+          "description": "The display label of the unit (e.g. 'kilogram', 'hour')."
+        },
+        "unitSymbol": {
+          "type": "string",
+          "description": "The display symbol of the unit (e.g. 'kg', 'h')."
+        }
+      }
+    },
+    "resourceSpecification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the resource specification."
+        },
+        "uri": {
+          "type": "string",
+          "format": "at-uri",
+          "description": "AT-URI link to the ResourceSpecification record."
         }
       }
     }
